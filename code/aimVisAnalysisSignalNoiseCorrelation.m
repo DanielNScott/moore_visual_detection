@@ -24,6 +24,15 @@ deltaF = tseries_rs.Data;
 [rewardOnSamps, rewardOnVect] = getStateSamps(bData.teensyStates,4,1);
 [licks, licksVect] = getStateSamps(bData.thresholdedLicks, 1, 1);
 
+% Considering whisker stimulation
+
+[stimOnSamps,stimOnVect]=getStateSamps(bData.teensyStates,2,1);
+[catchOnSamps,catchOnVect]=getStateSamps(bData.teensyStates,3,1);
+stimSamps = [stimOnSamps, catchOnSamps];
+stimSamps = sort(stimSamps);
+whiskerSample = stimSamps; 
+[rewardOnSamps, rewardOnVect] = getStateSamps(bData.teensyStates,4,1);
+[licks, licksVect] = getStateSamps(bData.thresholdedLicks, 1, 1);
 lickWindow = 1500;
 
 % loop over the first one hundred trials and extract hit/miss information
@@ -89,16 +98,7 @@ parsed.contrast = parsed.amplitude;
 pre = 1000;
 post = 3000;
 
-% Considering whisker stimulation
 
-[stimOnSamps,stimOnVect]=getStateSamps(bData.teensyStates,2,1);
-[catchOnSamps,catchOnVect]=getStateSamps(bData.teensyStates,3,1);
-stimSamps = [stimOnSamps, catchOnSamps];
-stimSamps = sort(stimSamps);
-whiskerSample = stimSamps; 
-[rewardOnSamps, rewardOnVect] = getStateSamps(bData.teensyStates,4,1);
-[licks, licksVect] = getStateSamps(bData.thresholdedLicks, 1, 1);
-lickWindow = 1500;
 zStackCellMat=[];
 
 % Get the event triggered average for fluorescence
