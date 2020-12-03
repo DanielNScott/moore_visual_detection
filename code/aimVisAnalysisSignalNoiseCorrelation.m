@@ -18,6 +18,72 @@ tseries = timeseries(deltaFDS',imTime);
 tseries_rs = resample(tseries,bData.sessionTime);
 deltaF = tseries_rs.Data;
 
+% parse the behavior for Hits, Misses, FAs, and CRs 
+
+% find the timing in ms of each reward and lick
+[rewardOnSamps, rewardOnVect] = getStateSamps(bData.teensyStates,4,1);
+[licks, licksVect] = getStateSamps(bData.thresholdedLicks, 1, 1);
+
+lickWindow = 1500;
+
+% loop over the first one hundred trials and extract hit/miss information
+    for n = 2:100
+        % for touch
+        %parsed.amplitude(n)=bData.c1_amp(n);
+        % for vision
+        parsed.amplitude(n)=bData.contrast(n);
+        tempLick = find(bData.thresholdedLicks(stimSamps(n):stimSamps(n)+lickWindow)==1);
+        tempRun = find(bData.binaryVelocity(stimSamps(n):stimSamps(n)+ lickWindow) == 1);
+
+        % check to see if the animal licked in the window
+        if numel(tempLick)>0
+            % it licked
+            parsed.lick(n) = 1;
+            parsed.lickLatency(n) = tempLick(1) - stimSamps(n);
+            parsed.lickCount(n) = numel(tempLick);
+            if parsed.amplitude(n)>0
+                parsed.response_hits(n) = 1;
+                parsed.response_miss(n) = 0;
+                parsed.response_fa(n) = NaN;
+                parsed.response_cr(n) = NaN;
+            elseif parsed.amplitude(n) == 0
+                parsed.response_fa(n) = 1;
+                parsed.response_cr(n) = 0;
+                parsed.response_hits(n) = NaN;
+                parsed.response_miss(n) = NaN;
+            end
+        elseif numel(tempLick)==0
+            parsed.lick(n) = 0;
+            parsed.lickLatency(n) = NaN;
+            parsed.lickCount(n) = 0;
+            if parsed.amplitude(n)>0
+                parsed.response_hits(n) = 0;
+                parsed.response_miss(n) = 1;
+                parsed.response_fa(n) = NaN;
+                parsed.response_cr(n) = NaN;
+            elseif parsed.amplitude(n) == 0
+                parsed.response_fa(n) = 0;
+                parsed.response_cr(n) = 1;
+                parsed.response_hits(n) = NaN;
+                parsed.response_miss(n) = NaN;
+            end
+        end
+        
+        % extract whether or not the mouse ran during the report window
+        if numel(tempRun) > 0
+            parsed.run(n) = 1;
+            tempVel = bData.velocity(stimSamps(n):stimSamps(n)+ lickWindow);
+            parsed.vel(n) = nanmean(abs(tempVel));
+        else
+            parsed.run(n) = 0;
+            parsed.vel(n) = 0;
+        end
+        
+        parsed.depth(n) = depth;
+    end
+    
+parsed.contrast = parsed.amplitude;
+
 
 % pre/post are ms before/after stimulus onset
 pre = 1000;
