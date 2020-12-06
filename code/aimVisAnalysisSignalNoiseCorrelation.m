@@ -166,7 +166,7 @@ sig = [sig{1}' ; sig{2}' ; sig{3}' ];
 sigcorr = corr(sig);
 
 sig_normed = sig;
-for i = 1:11
+for i = 1:size(somaticF,1)
    sig_normed(:,i) = sig(:,i)./norm(sig(:,i));
 end
 
@@ -193,7 +193,7 @@ for i = 1:3
 end
 
 ncs_avg = cell2mat(ncs);
-ncs_avg = reshape(ncs_avg, 11,11,3);
+ncs_avg = reshape(ncs_avg, size(somaticF,1),size(somaticF,1),3);
 ncs_avg = mean(ncs_avg, 3);
 
 % Define rank orderings of total correlation in each case
