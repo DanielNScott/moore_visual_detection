@@ -37,5 +37,18 @@ Upcoming Analyses =
 Contrast Bins ~ 1-5, 10-30, 50-100
 
 ----------------------------------------------------
-% Notes from December 9th 2020 Meeting
+% Notes from December 8th 2020 Meeting
 
+Added behavioral code for parsing hit and miss data 
+
+Noise correlation of hit and miss cells and OSI
+
+Dan is going to add contrast 
+- compare learning of contrast vs. orientation
+- psychometric function
+
+Ian will pull slope and intercept of NCxSC plots over
+the data set
+
+----------------------------------------------------
+% Notes from December 15th 2020 Meeting
