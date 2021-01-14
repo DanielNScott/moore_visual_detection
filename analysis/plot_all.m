@@ -1,33 +1,47 @@
 %% Make Plots
+close all;
+
+save = 0;
+folder_name = 'PV_CIX22_04Orientation_Figs';
+
+% Make and go to folder
+if save
+   mkdir(folder_name);
+   cd(folder_name)
+end
 
 % Plot the raw evoked activity correlation
-plot_raw_corr(corrMatrix)
+plot_raw_corr(corrMatrix, save)
 
 % Plot top noise components by stimulus
-plot_ncs_evecs(evecs, evals)
+plot_ncs_evecs(evecs, evals, save)
 
 % Plot the evoked activity, zscored over time, by neuron and condition
-plot_zscored_evoked(evoked,stim_trials)
+plot_zscored_evoked(evoked, stim_trials, save)
 
 % Plot 3 dim noise correlation graphs
-plot_3d_ncs_on_sig(sig, ncs)
+plot_3d_ncs_on_sig(sig, ncs, save)
 
 % Plot the noise correlation matrices
-plot_nc_mats(ncs, ranks1, ranks2, ranks3)
+plot_nc_mats(ncs, ranks1, ranks2, ranks3, save)
 
 % Plot the noise corrs as functions of signal tuning
-plot_sig_vs_noise(sigcorr, ncs, ncs_avg)
+plot_sig_vs_noise(sigcorr, ncs, ncs_avg, save)
 
 % Plot the signal correlation matrix as points in signal space
-plot_normed_sigcorr(sig_normed)
+plot_normed_sigcorr(sig_normed, save)
 
 % Plot the rankings of how strongly each neurons correlates with others by signal
-plot_total_corr_ranks(ranks1,ranks2,ranks3)
+plot_total_corr_ranks(ranks1, ranks2, ranks3, save)
+
+if save
+   cd('..')
+end
 
 
 %% Plotting functions
 
-function [] = plot_raw_corr(corrMatrix)
+function [] = plot_raw_corr(corrMatrix, save)
 
    figure()
    imagesc(corrMatrix)
@@ -35,9 +49,14 @@ function [] = plot_raw_corr(corrMatrix)
    ylabel('Cell Number')
    title('Raw Correlation Across Cells')
    colorbar()
+   
+   if save
+      saveas(gcf,'./Raw-dfbyF-corr.png');
+      saveas(gcf,'./Raw-dfbyF-corr.fig');
+   end
 end
 
-function [] = plot_ncs_evecs(evecs, evals)
+function [] = plot_ncs_evecs(evecs, evals, save)
 
    figure()
    set(gcf,'Position', [95, 528, 1520, 416])
@@ -49,7 +68,7 @@ function [] = plot_ncs_evecs(evecs, evals)
 
    plot( evecs{1}(:,2), '--o', 'Color', colorOrder(1,:));
    plot( evecs{2}(:,2), '--o', 'Color', colorOrder(2,:));
-   plot(-evecs{3}(:,2), '--o', 'Color', colorOrder(3,:));
+   plot( evecs{3}(:,2), '--o', 'Color', colorOrder(3,:));
 
    plot([1,11], [0,0],'--k')
    xlim([1,11])
@@ -71,9 +90,14 @@ function [] = plot_ncs_evecs(evecs, evals)
    ylabel('Eigenvalue')
    legend({'S1', 'S2', 'S3'})
    xlim([1,11])
+   
+   if save
+      saveas(gcf,'./Noise-Corr-Spectra.png');
+      saveas(gcf,'./Noise-Corr-Spectra.fig');
+   end
 end
 
-function [] = plot_zscored_evoked(evoked, stim_trials)
+function [] = plot_zscored_evoked(evoked, stim_trials, save)
    figure()
    
    for i = 1:3
@@ -95,9 +119,15 @@ function [] = plot_zscored_evoked(evoked, stim_trials)
       xlim([1,length(z_evoked_mu)])
       ylim([-3,3])
    end
+   
+   if save
+      saveas(gcf,'Evoked-dfbyF.png');
+      saveas(gcf,'Evoked-dfbyF.fig');
+   end
+
 end
 
-function [] = plot_3d_ncs_on_sig(sig, ncs)
+function [] = plot_3d_ncs_on_sig(sig, ncs, save)
    figure()
    set(gcf,'Position', [59         491        1533         374])
    for k = 1:3
@@ -105,9 +135,13 @@ function [] = plot_3d_ncs_on_sig(sig, ncs)
 
       scatter3(sig(1,:), sig(2,:), sig(3,:))
       hold on
-      zlim([0,60])
-      ylim([0,60])
-      xlim([0,60])
+
+      minlim = min(sig(:));
+      maxlim = max(sig(:));
+      
+      xlim([min(0,minlim), max(60,maxlim)])
+      ylim([min(0,minlim), max(60,maxlim)])
+      zlim([min(0,minlim), max(60,maxlim)])
 
       title(['Noise corr. graph given S', num2str(k)])
       xlabel('S1 response')
@@ -119,17 +153,18 @@ function [] = plot_3d_ncs_on_sig(sig, ncs)
       medNC = median(get_upper(ncs{k}));
       maxNC = max(   get_upper(ncs{k}));
 
+      ncells = length(sig(1,:));
       lcolors = jet(101);
-      for i = 1:10
-         for j = (i+1):11
+      for i = 1:(ncells-1)
+         for j = (i+1):ncells
             norm_val(i,j) = (ncs{k}(i,j)-minNC)/(maxNC-minNC);
             link_col{i,j} = lcolors(round(norm_val(i,j)*100)+1,:);
          end
       end
 
       quad4 = prctile(get_upper(norm_val*100),0);
-      for i = 1:10
-         for j = 2:11
+      for i = 1:(ncells-1)
+         for j = 2:ncells
             if norm_val(i,j)*100 >= quad4
                plot3(sig(1,[i,j]), sig(2,[i,j]), sig(3,[i,j]), 'Color', link_col{i,j}, 'LineWidth', 2);
             end
@@ -137,10 +172,16 @@ function [] = plot_3d_ncs_on_sig(sig, ncs)
       end
 
    end
+
+   if save
+      saveas(gcf,'NCs-on-sig-3D.png');
+      saveas(gcf,'NCs-on-sig-3D.fig');
+   end
+
 end
 
 
-function [] = plot_nc_mats(ncs, ranks1, ranks2, ranks3)
+function [] = plot_nc_mats(ncs, ranks1, ranks2, ranks3, save)
 
    figure()
 
@@ -201,9 +242,14 @@ function [] = plot_nc_mats(ncs, ranks1, ranks2, ranks3)
    ylabel('Count')
    xlabel('Noise Correlation')
 
+   if save
+      saveas(gcf,'NC-matrices.png');
+      saveas(gcf,'NC-matrices.fig');
+   end
+
 end
 
-function [] = plot_sig_vs_noise(sigcorr, ncs, ncs_avg)
+function [] = plot_sig_vs_noise(sigcorr, ncs, ncs_avg, save)
 
    sigvec = get_upper(sigcorr);
 
@@ -214,13 +260,21 @@ function [] = plot_sig_vs_noise(sigcorr, ncs, ncs_avg)
       ncsvec = get_upper(ncs{i});
       [m, b] = fit_orthog_line(sigvec,ncsvec);
       signoise_subplot(sigvec, ncsvec, m,b, ['S' num2str(i) ' Signal & Noise'])
+      xlim([-1,1])
+      ylim([-1,1])
    end
 
    subplot(2,2,4)
    ncsvec = get_upper(ncs_avg);
    [m, b] = fit_orthog_line(sigvec,ncsvec);
    signoise_subplot(sigvec, ncsvec, m,b, 'Avg. Signal & Noise')
-
+   xlim([-1,1])
+   ylim([-1,1])
+      
+   if save
+      saveas(gcf,'Sig-vs-Noise.png');
+      saveas(gcf,'Sig-vs-Noise.fig');
+   end
 
 end
 
@@ -236,29 +290,54 @@ function [] = signoise_subplot(sigvec,ncsvec,m,b,name)
 end
 
 
-function [] = plot_normed_sigcorr(sig_normed)
+function [] = plot_normed_sigcorr(sig_normed, save)
 
    figure()
    set(gcf,'Position', [100   517   458   427])
+   
+   %subplot(1,2,1)
    scatter3(sig_normed(1,:), sig_normed(2,:), sig_normed(3,:));
    hold on
-   xlim([0,1])
-   ylim([0,1])
-   zlim([0,1])
+   
+   if any(any(sig_normed < 0))
+      xlim([-1,1])
+      ylim([-1,1])
+      zlim([-1,1])
+   else
+      xlim([0,1])
+      ylim([0,1])
+      zlim([0,1])
+   end
 
    [sphere_x,sphere_y,sphere_z] = sphere(100);
    color = ones(length(sphere_x));
    sphere_surf = surf(sphere_x,sphere_y,sphere_z, 'LineStyle', 'none', 'FaceAlpha', 0.3);
-
+   
+   diam = zeros(3,2);
+   diam(:,1) = -[1;1;1]';
+   diam(:,2) =  [1;1;1]';
+   diam = diam./norm(diam(:,1));
+   
+   plot3(diam(1,:), diam(2,:), diam(3,:), 'ko','LineWidth',2)
+   
    title('Normed Signal Responses by Neuron')
    xlabel('S1 Response')
    ylabel('S2 Response')
    zlabel('S3 Response')
    
    set(gca, 'CameraPosition', [6.9846    2.3716    5.9265])
+   
+   
+   %subplot(1,2,2)
+   
+   if save
+      saveas(gcf,'Normed-sig-corr.png');
+      saveas(gcf,'Normed-sig-corr.fig');
+   end
+
 end
 
-function [] = plot_total_corr_ranks(ranks1,ranks2,ranks3)
+function [] = plot_total_corr_ranks(ranks1, ranks2, ranks3, save)
 
    figure()
    set(gcf,'Position', [95   274   446   670])
@@ -270,7 +349,8 @@ function [] = plot_total_corr_ranks(ranks1,ranks2,ranks3)
    [rows1, ~] = find(P1);
    [rows2, ~] = find(P2);
 
-   orders = [(1:11)', rows1, rows2];
+   ncells = length(rows1);
+   orders = [(1:ncells)', rows1, rows2];
 
    plot(orders', '-o');
    grid on
@@ -282,4 +362,8 @@ function [] = plot_total_corr_ranks(ranks1,ranks2,ranks3)
    ylabel('Rank Order')
    title('Total Correlation by Neuron')
 
+   if save
+      saveas(gcf,'Total-corr-rank.png');
+      saveas(gcf,'Total-corr-rank.fig');
+   end
 end

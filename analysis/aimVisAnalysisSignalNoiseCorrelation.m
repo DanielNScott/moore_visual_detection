@@ -9,7 +9,7 @@ hertz = 1/frameDelta*1000;
 % baseline data with df/f
 
 blCutOffs = computeQuantileCutoffs(somaticF);
-somaticF_BLs=slidingBaseline(somaticF,500,blCutOffs);
+somaticF_BLs = slidingBaseline(somaticF,500,blCutOffs);
 deltaFDS = (somaticF - somaticF_BLs)./somaticF_BLs;
 
 
@@ -93,29 +93,32 @@ lickWindow = 1500;
     
 parsed.contrast = parsed.amplitude;
 
-% hit rate, false alarm rate, and d' calculation 
-smtWin = 50;
-parsed.hitRate = nPointMean(parsed.response_hits, smtWin)';
-parsed.faRate = nPointMean(parsed.response_fa, smtWin)';
+calc_hit_FA_dp = 0;
+if calc_hit_FA_dp
+   % hit rate, false alarm rate, and d' calculation
+   smtWin = 50;
+   parsed.hitRate = nPointMean(parsed.response_hits, smtWin)';
+   parsed.faRate = nPointMean(parsed.response_fa, smtWin)';
 
-figure
-subplot(2,1,1)
-plot(parsed.hitRate);
-ylim([0,1]);
-title('Hit Rate')
-ylabel('P(H)')
-xlabel('Trial Number')
-%legend('Day 4', 'Day 5', 'Day 6')
-hold all
+   figure
+   subplot(2,1,1)
+   plot(parsed.hitRate);
+   ylim([0,1]);
+   title('Hit Rate')
+   ylabel('P(H)')
+   xlabel('Trial Number')
+   %legend('Day 4', 'Day 5', 'Day 6')
+   hold all
 
-parsed.dPrime = norminv(parsed.hitRate) - norminv(parsed.faRate);
+   parsed.dPrime = norminv(parsed.hitRate) - norminv(parsed.faRate);
 
-subplot(2,1,2)
-plot(parsed.dPrime);
-title('d Prime')
-xlabel('Trial Number')
-%legend('Day 1', 'Day 2', 'Day 3','Day 4','Day 5');
-ylim([0,2])
+   subplot(2,1,2)
+   plot(parsed.dPrime);
+   title('d Prime')
+   xlabel('Trial Number')
+   %legend('Day 1', 'Day 2', 'Day 3','Day 4','Day 5');
+   ylim([0,2])
+end
 
 % pre/post are ms before/after stimulus onset
 pre = 1000;
@@ -136,15 +139,15 @@ end
 
 
 % Make subplots for each cell
-    figure
-    for cellID = 1:size(somaticF, 1)
-        subplot (3,4,cellID)
-        %plot([-1*pre:post],(zstackcellmat(:,:,cellID)'))
-        plot([-1*pre:post], mean((zStackCellMat(:,:,cellID)'),2)-mean(mean(zStackCellMat(:,1:900,cellID))))
-        title(['Cell', num2str(cellID)])
-        ylim([-0.05,0.1])
-        xlim([-1000,3000])
-    end
+%     figure
+%     for cellID = 1:size(somaticF, 1)
+%         subplot (3,4,cellID)
+%         %plot([-1*pre:post],(zstackcellmat(:,:,cellID)'))
+%         plot([-1*pre:post], mean((zStackCellMat(:,:,cellID)'),2)-mean(mean(zStackCellMat(:,1:900,cellID))))
+%         title(['Cell', num2str(cellID)])
+%         ylim([-0.05,0.1])
+%         xlim([-1000,3000])
+%     end
 
 %%
 
@@ -175,23 +178,13 @@ orientation = orientation(1:100);
 contrast = bData.contrast;
 contrast = contrast(1:100);
 
-stim_trials{1} = orientation == 90;
-stim_trials{2} = orientation == 0;
-stim_trials{3} = orientation == 270;
+% Subdivide trials by contrast or orientation
+stim_trials = get_stim_trials('Orientation', orientation, contrast);
 
-sig = {};
-sig{1} = mean(evoked(:,stim_trials{1}),2);
-sig{2} = mean(evoked(:,stim_trials{2}),2);
-sig{3} = mean(evoked(:,stim_trials{3}),2);
-
-sig = [sig{1}' ; sig{2}' ; sig{3}' ];
+% Get the mean signals for these
+[sig, sig_normed] =  get_signal_vecs(evoked, stim_trials, somaticF);
 
 sigcorr = corr(sig);
-
-sig_normed = sig;
-for i = 1:size(somaticF,1)
-   sig_normed(:,i) = sig(:,i)./norm(sig(:,i));
-end
 
 %
 ncovs = {};
