@@ -51,4 +51,15 @@ Ian will pull slope and intercept of NCxSC plots over
 the data set
 
 ----------------------------------------------------
-% Notes from December 15th 2020 Meeting
+% Notes from January 14th 2021 Meeting
+
+Ian added code for neurometric and psychometric functions
+- neurometric functions are going to be changed to be z scored
+
+Dan is looking at the trial cross correlation instead of mean
+
+We are going to add SC x NC across each days of training
+
+Ian is working on getting all data to the cluster
+- the current data set does not have all days in a row
+- current data is pulled from sessions with 100 trials
