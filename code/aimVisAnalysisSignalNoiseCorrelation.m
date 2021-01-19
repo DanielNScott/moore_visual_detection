@@ -170,10 +170,53 @@ corrMatrix = corr(evoked');
 
 % convenience downsample for now to 100
 orientation = bData.orientation;
-orientation = orientation(1:100);
+orientation = orientation(2:100);
 
 contrast = bData.contrast;
-contrast = contrast(1:100);
+contrast = contrast(2:100);
+
+
+% neurometric function for each cell
+
+contrastZero = find(contrast == 0);
+contrastLow = find(contrast < 20 & contrast >0);
+contrastMid = find(contrast>=20 & contrast <50);
+contrastHigh = find(contrast>=50 & contrast <100);
+contrastHundred = find(contrast == 100);
+
+evokedZeroContrast = mean(evoked(:,contrastZero),2);
+evokedLowContrast = mean(evoked(:,contrastLow),2);
+evokedMidContrast = mean(evoked(:,contrastMid),2);
+evokedHighContrast = mean(evoked(:,contrastHigh),2);
+evokedHundredContrast = mean(evoked(:,contrastHundred),2);
+
+cellContrastMatrix = [evokedZeroContrast evokedLowContrast evokedMidContrast...
+    evokedHighContrast evokedHundredContrast]
+
+cellContrastMatrix = cellContrastMatrix';
+
+figure
+plot(cellContrastMatrix(:,4))
+title('Neurometric Function')
+xlabel('Contrast Level')
+ylabel('Evoked Score')
+
+% psychometric function for mouse
+
+hitZeroContrast = mean(parsed.hitRate(:,contrastZero),2);
+hitLowContrast = mean(parsed.hitRate(:,contrastLow),2);
+hitMidContrast = mean(parsed.hitRate(:,contrastMid),2);
+hitHighContrast = mean(parsed.hitRate(:,contrastHigh),2);
+hitHundredContrast = mean(parsed.hitRate(:,contrastHundred),2);
+
+hitContrastMatrix = [ hitZeroContrast hitLowContrast hitMidContrast...
+    hitHighContrast hitHundredContrast ]
+
+figure
+plot(hitContrastMatrix)
+title('Psychometric Function')
+xlabel('Contrast Level')
+ylabel('P(Hit)')
 
 stim_trials{1} = orientation == 90;
 stim_trials{2} = orientation == 0;
