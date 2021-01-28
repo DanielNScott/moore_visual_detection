@@ -326,7 +326,6 @@ parsed.dPrimeWeak = norminv(parsed.hitRateWeak) - norminv(parsed.faRateWeak);
 figure, plot(parsed.strongInds,parsed.hitRateStrong);
 ylim([0,1]);
 figure, plot(parsed.strongInds,parsed.dPrimeStrong);
-plot(parsed.dPrime);
 
 % Get a threshold
 lowCut = 0.25;
@@ -351,9 +350,13 @@ deSkewDPrime = norminv(parsed.hitRate(hr_deskew)) - norminv(parsed.faRate(hr_des
 figure
 subplot(1,2,1)
 plot(parsed.dPrime, 'k-');
+xlabel('Trial Number')
+ylabel('d Prime')
 
 subplot(1,2,2)
 plot(deSkewDPrime, 'r-');
+xlabel('Trial Number')
+ylabel('Deskewed d Prime')
 
 
 % re-evaluate the hit and miss trials based on the d prime deskewed trials
@@ -380,13 +383,6 @@ parsed.allCrTrials = intersect(parsed.allCatchTrials,find(parsed.response_cr==1)
 parsed.allHitDF = triggeredDF(:,:,parsed.allHitTrials);
 parsed.allMissDF = triggeredDF(:,:,parsed.allMissTrials);
 
-% parsed.maxStim = triggeredDF(:,:,find(bData.contrast == 100));
-
-% compare contrast distributions
-hCont = parsed.contrast(parsed.allHitTrials);
-mCont = parsed.contrast(parsed.allMissTrials);
-figure,nhist({hCont,mCont},'box')
-
 
 % look at threshold level trials, defined as trials as trials from 1 to 20%
 % contrast and above or equal to a d Prime of 1.0
@@ -406,7 +402,7 @@ cellMiss = squeeze(parsed.thrMissDF(cellNum,:,:));
 inds=size(parsed.thrHitDF,2);
 hSem=nanstd(cellHit,1,2)./sqrt(numel(hitThreshContTrials)-1);
 mSem=nanstd(cellMiss,1,2)./sqrt(numel(missThreshContTrials)-1);
-tVec = frameDelta:frameDelta:frameDelta*inds;
+tVec = 1:(pre + post + 1)
 figure
 boundedline(tVec,nanmean(cellMiss,2),...
     mSem,'cmap',[1,0.3,0],'transparency',0.1)
@@ -414,6 +410,9 @@ boundedline(tVec,nanmean(cellMiss,2),...
     hold all
 boundedline(tVec,nanmean(cellHit,2),...
     hSem,'cmap',[0,0.3,1],'transparency',0.05)
+title('Evoked Activity on Threshold Hit and Miss Trials')
+xlabel('Time (ms)')
+ylabel('DF/F')
 
 
 % ROC (detection) population for DP, start with pop distributions
@@ -430,8 +429,6 @@ postStim_miss = squeeze(trapz(parsed.thrMissDF(:,preFr+1:preFr+postFr,:),2));
 evokedHit = postStim_hit-preStim_hit;
 evokedMiss = postStim_miss-preStim_miss;
 
-figure,nhist({preStim_hit,postStim_hit,preStim_miss,postStim_miss},'box')
-figure,nhist({evokedHit,evokedMiss},'box')
 
 % sp now, start with pop distributions
 
@@ -448,7 +445,6 @@ postStim_highStim = squeeze(trapz(triggeredDF(:,preFr+1:preFr+postFr,highStim),2
 
 evoked_highStim = postStim_highStim-preStim_highStim;
 
-figure,nhist({abs(evoked_noStim),abs(evoked_highStim)},'box')
 
 
 % calculate SP and DP
@@ -471,7 +467,14 @@ end
 
 figure,plot(parsed.SP_all,'ko')
 hold all,plot(parsed.DP_Thr,'bo')
+xlabel('Cell Number')
+ylabel('Detect Probability and Signal Probability')
+
+
 figure,plot(parsed.SP_all,parsed.DP_Thr,'o')
+title('Detect Probability as a Function of Signal Probability')
+xlabel('Signal Probability')
+ylabel('Detect Probability')
 
 % shuffle the trials labels 1000 times and run the ROC on shuffled data
 
@@ -516,7 +519,15 @@ figure,plot(parsed.SP_all,parsed.DP_Thr,'o')
     
     figure,plot(mean(poolShuffAUCSP),'ko')
     hold all,plot(mean(poolShuffAUCDP),'bo')
+    xlabel('Cell Number')
+    ylabel('Shuffled Detect Probability and Signal Probability')
+    
+    
     figure,plot(mean(poolShuffAUCSP),mean(poolShuffAUCDP),'o')
+    title('Shuffled Detect Probability as a Function of Shuffled Signal Probability')
+    xlabel('Shuffled Signal Probability')
+    ylabel('Shuffled Detect Probability')
+   
    
  % calculate which cells are hit and miss based on 1.5 standard deviations
  % from the shuffled mean for each cell
