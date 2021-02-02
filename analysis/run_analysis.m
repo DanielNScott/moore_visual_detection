@@ -70,7 +70,7 @@ stim_trials = get_stim_trials('Orientation', bData.orientation(1:nStim), bData.c
 corrs = get_corrs(evoked, sig, stim_trials, nCells);
 
 %% Plot stuff
-plot_all(evoked, sig, sig_normed, stim_trials, corrs, folder, save)
+plot_all(evoked, sig, sig_normed, stim_trials, corrs, parsed, folder, save)
 
 %% Unused material: To delete in next commit
 

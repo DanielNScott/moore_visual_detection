@@ -51,4 +51,50 @@ Ian will pull slope and intercept of NCxSC plots over
 the data set
 
 ----------------------------------------------------
-% Notes from December 15th 2020 Meeting
+% Notes from January 14th 2021 Meeting
+
+Ian added code for neurometric and psychometric functions
+- neurometric functions are going to be changed to be z scored
+
+Dan is looking at the trial cross correlation instead of mean
+
+We are going to add SC x NC across each days of training
+
+Ian is working on getting all data to the cluster
+- the current data set does not have all days in a row
+- current data is pulled from sessions with 100 trials
+
+----------------------------------------------------
+% Notes from January 18th 2021 Meeting with Chris M and Chris M
+
+Moore Project 21-18-12 (yy-mm-dd)
+
+Attendance:
+- Ian More (IM), Chris Moore (CM), Chris Deister (CD), Dan Scott (DS)
+
+Topics discussed:
+- Autocorr, xcorr, and multitaper indications of ~12.5 Hz power peak
+- Decreasing slopes and increasing intercepts of the signal to noise relationships
+- Xcorr noise correlation as a (not very informative) noise correlation metric to be used alongside total evoked NC.
+- PSTH piecewise linear fit
+
+Commentary from CD, CM:
+- PV cells with this gcamp are in bottom of fluorescence-by-CA concentration curve, so indicator not very sensitive
+- Distribution of flourescence gets skewed by activity - different distributions for different mean rates
+- This is because the PV cells are heavily calcium buffered
+- Usually ranking of activity values is used to give baseline between 10 and 15th percentile of fluorescence
+
+Suggestions:
+- Consider high-pass filtering the data as part of the baselining procedure
+- Apply OASIS (deconvolution / spike inference) and look to see what it's doing to baseline as well.
+- Look at different baselining procedures for various asymptotic exemplars of the data to see how they compare
+- Two asymptotic exemplar timeseries to be sure to compare with is neuropil ROI and average over such ROIs
+- Would hope that somatic rhythmicity would not show up in neuropil if it is not of nuisance physiological origin
+- Heart rate might give ~12 Hz
+- Check out original gcamp 6 paper to see how they're baselining
+- Check out fig 4 of Hyeyoung's paper from last year
+
+Additional:
+- In prev. discussion IM says Hyeyoung's work found higher baseline activity in detect trials
+- Noted that higher beta gives more non-detection in CM & Stephanie Jones' work
+- CM work indicates more gamma implies less detection
