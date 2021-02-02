@@ -1,5 +1,8 @@
-function [] = get_plot_SPDPs()
+function [] = get_plot_SPDPs(bData, parsed, zStackCellMat, frameDelta, dFWindow, somaticF)
 
+
+pre = abs(dFWindow(1));
+post = dFWindow(2);
 %
 
 % assign triggeredDF for each cell, trial, and samples
@@ -121,8 +124,8 @@ figure,nhist({hCont,mCont},'box')
 
 % look at threshold level trials, defined as trials as trials from 1 to 20%
 % contrast and above or equal to a d Prime of 1.0
-hitThreshContTrials = intersect(parsed.allHitTrials,find(parsed.contrast(hr_deskew)<=20 & parsed.contrast(hr_deskew)>0 & deSkewDPrime>=0.8))
-missThreshContTrials = intersect(parsed.allMissTrials,find(parsed.contrast(hr_deskew)<=20 & parsed.contrast(hr_deskew)>0 & deSkewDPrime>=0.8))
+hitThreshContTrials = intersect(parsed.allHitTrials,find(parsed.contrast(hr_deskew)<=20 & parsed.contrast(hr_deskew)>0 & deSkewDPrime>=0.8));
+missThreshContTrials = intersect(parsed.allMissTrials,find(parsed.contrast(hr_deskew)<=20 & parsed.contrast(hr_deskew)>0 & deSkewDPrime>=0.8));
 
 
 parsed.thrHitDF = triggeredDF(:,:,hitThreshContTrials);
@@ -131,7 +134,7 @@ parsed.thrMissDF = triggeredDF(:,:,missThreshContTrials);
 % plot the average activity for a cell on hit trials and miss trials
 cellNum = 1;
 
-cellHit = squeeze(parsed.thrHitDF(cellNum,:,:));
+cellHit  = squeeze(parsed.thrHitDF(cellNum,:,:));
 cellMiss = squeeze(parsed.thrMissDF(cellNum,:,:));
 
 inds=size(parsed.thrHitDF,2);

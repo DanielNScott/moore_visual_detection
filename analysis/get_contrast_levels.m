@@ -1,9 +1,15 @@
-function [clevs] = get_contrast_levels(contrast)
+function [clevs] = get_contrast_levels(contrast, nStim)
 
-clevs.Zero = find(contrast == 0);
-clevs.Low = find(contrast < 20 & contrast >0);
-clevs.Mid = find(contrast>=20 & contrast <50);
-clevs.High = find(contrast>=50 & contrast <100);
-clevs.Hundred = find(contrast == 100);
+clevs.Zero = clip(find(contrast == 0), nStim);
+clevs.Low = clip(find(contrast < 20 & contrast >0), nStim);
+clevs.Mid = clip(find(contrast>=20 & contrast <50), nStim);
+clevs.High = clip(find(contrast>=50 & contrast <100), nStim);
+clevs.Hundred = clip(find(contrast == 100), nStim);
+
+end
+
+function [field] = clip(field, nStims)
+
+field = intersect(field, 1:nStims);
 
 end

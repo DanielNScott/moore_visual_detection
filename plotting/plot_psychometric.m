@@ -9,7 +9,7 @@ hitHighContrast = mean(parsed.hitRate(:,clevs.High),2);
 hitHundredContrast = mean(parsed.hitRate(:,clevs.Hundred),2);
 
 hitContrastMatrix = [ hitZeroContrast hitLowContrast hitMidContrast...
-    hitHighContrast hitHundredContrast ]
+    hitHighContrast hitHundredContrast ];
 
 figure
 plot(hitContrastMatrix)

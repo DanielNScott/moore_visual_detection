@@ -7,7 +7,7 @@ dFBLWindowLen = 500;
 
 % Pre/post are ms before/after stimulus onset
 dFWindow = [-1000,3000];
-nStim = 100;
+nStim = 120;
 
 % Response period length
 lickWindow = 1500;
@@ -50,7 +50,7 @@ stimInds = [stimOnInds, catchOnInds];
 stimInds = sort(stimInds);
 
 % Parse behavior
-parsed = parse_behavior(bData, stimInds, lickWindow, depth);
+parsed = parse_behavior(bData, stimInds, lickWindow, depth, nStim);
 
 % Get peri-stimulus time flourescence
 dF = get_PSTH(deltaF, dFWindow, nStim, stimInds);
@@ -70,7 +70,11 @@ stim_trials = get_stim_trials('Orientation', bData.orientation(1:nStim), bData.c
 corrs = get_corrs(evoked, sig, stim_trials, nCells);
 
 %% Plot stuff
-plot_all(evoked, sig, sig_normed, stim_trials, corrs, parsed, folder, save)
+plot_all(evoked, sig, sig_normed, stim_trials, corrs, parsed, bdata.Contrast, folder, save)
+
+
+%% 
+get_plot_SPDPs(bData, parsed, zStackCellMat, frameDelta, dFWindow, somaticF)
 
 %% Unused material: To delete in next commit
 

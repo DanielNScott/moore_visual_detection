@@ -1,4 +1,4 @@
-function [] = plot_all(evoked, sig, sig_normed, stim_trials, corrs, parsed, folder, save)
+function [] = plot_all(evoked, sig, sig_normed, stim_trials, corrs, parsed, contrast, folder, save)
 
 % Make Plots
 close all;
@@ -40,10 +40,8 @@ plot_total_corr_ranks(ranks1, ranks2, ranks3, save)
 
 % Plot neuro- and psychometric functions
 clevels = get_contrast_levels(contrast);
-plot_neurometric(parsed, clevels);
+plot_neurometric(evoked, clevels);
 plot_psychometric(parsed, clevels);
-
-
 
 if save
    cd('..')

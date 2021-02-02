@@ -1,4 +1,4 @@
-function [] = plot_neurometric(parsed, clevs)
+function [] = plot_neurometric(evoked, clevs)
 
 % neurometric function for each cell
 
@@ -9,7 +9,7 @@ evokedHighContrast = mean(evoked(:,clevs.High),2);
 evokedHundredContrast = mean(evoked(:,clevs.Hundred),2);
 
 cellContrastMatrix = [evokedZeroContrast evokedLowContrast evokedMidContrast...
-    evokedHighContrast evokedHundredContrast]
+    evokedHighContrast evokedHundredContrast];
 
 cellContrastMatrix = cellContrastMatrix';
 
