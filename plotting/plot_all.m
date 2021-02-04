@@ -39,9 +39,9 @@ plot_normed_sigcorr(sig_normed, save)
 plot_total_corr_ranks(ranks1, ranks2, ranks3, save)
 
 % Plot neuro- and psychometric functions
-clevels = get_contrast_levels(contrast);
-plot_neurometric(evoked, clevels);
-plot_psychometric(parsed, clevels);
+%clevels = get_contrast_levels(contrast);
+%plot_neurometric(evoked, clevels);
+%plot_psychometric(parsed, clevels);
 
 if save
    cd('..')

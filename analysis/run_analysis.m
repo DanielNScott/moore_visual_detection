@@ -1,16 +1,23 @@
 %% Analysis parameters
-file = './data/cix22_25Feb2019.mat';
+ps.path  = './data/';
+ps.fname = 'cix22_25Feb2019.mat';
 
-baseInds = 1:1000;
-respInds = 1000:2000;
-dFBLWindowLen = 500;
+ps.baseInds = 1:1000;
+ps.respInds = 1000:2000;
+ps.dFBLWindowLen = 500;
 
 % Pre/post are ms before/after stimulus onset
-dFWindow = [-1000,3000];
-nStim = 120;
+ps.dFWindow = [-1000,3000];
+ps.nStim = 120;
 
 % Response period length
-lickWindow = 1500;
+ps.lickWindow = 1500;
+
+% Save the processed .mat file?
+ps.save_proc = 0;
+
+% Plot things?
+ps.plot_flg = 0;
 
 %% Plot parameters
 save = 0;
@@ -18,6 +25,7 @@ folder = 'PV_CIX22_04Orientation_Figs';
 
 %% Load and reformat info
 % Load necessary file contents
+file = [ps.path, ps.fname];
 load(file, 'bData', 'somaticF', 'frameDelta', 'depth')
 
 % 100k frames taken @ 30 Hz
@@ -33,7 +41,7 @@ frameTimesMs = frameTimes/ms2s;
 
 % baseline data with df/f
 blCutOffs    = computeQuantileCutoffs(somaticF);
-somaticF_BLs = slidingBaseline(somaticF, dFBLWindowLen, blCutOffs);
+somaticF_BLs = slidingBaseline(somaticF, ps.dFBLWindowLen, blCutOffs);
 deltaFDS     = (somaticF - somaticF_BLs)./somaticF_BLs;
 
 % upsample data
@@ -50,37 +58,57 @@ stimInds = [stimOnInds, catchOnInds];
 stimInds = sort(stimInds);
 
 % Parse behavior
-parsed = parse_behavior(bData, stimInds, lickWindow, depth, nStim);
+parsed = parse_behavior(bData, stimInds, ps.lickWindow, depth, ps.nStim);
 
 % Get peri-stimulus time flourescence
-dF = get_PSTH(deltaF, dFWindow, nStim, stimInds);
+dF = get_PSTH(deltaF, ps.dFWindow, ps.nStim, stimInds);
 
 % Get evoked activity
-evoked = get_evoked_dF(dF, baseInds, respInds);
+evoked = get_evoked_dF(dF, ps.baseInds, ps.respInds);
 
 %% Get derived quantities like signal vectors, noise correlations
 
 % Subdivide trials by contrast or orientation
-stim_trials = get_stim_trials('Orientation', bData.orientation(1:nStim), bData.contrast(1:nStim));
+or.trials = get_stim_trials('Orientation', bData.orientation(1:ps.nStim), bData.contrast(1:ps.nStim));
+co.trials = get_stim_trials('Contrast'   , bData.orientation(1:ps.nStim), bData.contrast(1:ps.nStim));
 
 % Get the mean signals for trial type
-[sig, sig_normed] =  get_signal_vecs(evoked, stim_trials, nCells);
+[or.sig, or.sig_normed] =  get_signal_vecs(evoked, or.trials, nCells);
+[co.sig, co.sig_normed] =  get_signal_vecs(evoked, co.trials, nCells);
 
 % Get correlation info 
-corrs = get_corrs(evoked, sig, stim_trials, nCells);
+or.corrs = get_corrs(evoked, or.sig, or.trials, nCells);
+co.corrs = get_corrs(evoked, co.sig, or.trials, nCells);
+
+or.corrs.mnb = get_sig_vs_noise(or.corrs.sig, or.corrs.ncs, or.corrs.ncs_avg);
+co.corrs.mnb = get_sig_vs_noise(co.corrs.sig, co.corrs.ncs, co.corrs.ncs_avg);
+
+%% Package the processed data as a structure
+if ps.save_proc
+   proc.ID        = ps.fname(4:5);
+   proc.date      = ps.fname(7:15);
+   proc.params    = ps;
+   proc.evoked    = evoked;
+   proc.dF        = dF;
+   proc.blCutOffs = blCutOffs;
+   proc.parsed    = parsed;
+   proc.stimInds  = stimInds;
+
+   proc.or = or;
+   proc.co = co;
+
+   proc.stim.contrast    = bData.contrast;
+   proc.stim.orientation = bData.orientation;
+
+   save([path, ps.fname(1:(end-4)), '_proc.mat'], 'proc');
+end
 
 %% Plot stuff
-plot_all(evoked, sig, sig_normed, stim_trials, corrs, parsed, bdata.Contrast, folder, save)
+if ps.plot_flg
+   
+   plot_all(evoked, or.sig, or.sig_normed, or.trials, or.corrs, parsed, bData.contrast, [folder, '_O'], save)
+   plot_all(evoked, co.sig, co.sig_normed, co.trials, co.corrs, parsed, bData.contrast, [folder, '_C'], save)
 
+   get_plot_SPDPs(bData, parsed, zStackCellMat, frameDelta, ps.dFWindow, somaticF)
+end
 
-%% 
-get_plot_SPDPs(bData, parsed, zStackCellMat, frameDelta, dFWindow, somaticF)
-
-%% Unused material: To delete in next commit
-
-%[rewardOnInds, rewardOnVect] = getStateSamps(bData.teensyStates,4,1);
-%[licks,           licksVect] = getStateSamps(bData.thresholdedLicks, 1, 1);
-
-% Find the sample number of each reward and lick
-%[rewardOnInds,  rewardOnVect] = getStateSamps(bData.teensyStates, 4, 1);
-%[licks,            licksVect] = getStateSamps(bData.thresholdedLicks, 1, 1);
