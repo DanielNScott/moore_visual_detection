@@ -1,6 +1,6 @@
 %% Analysis parameters
-ps.path  = './data/';
-ps.fname = 'cix22_25Feb2019.mat';
+%ps.path  = './data/';
+%ps.fname = 'cix22_25Feb2019.mat';
 
 ps.baseInds = 1:1000;
 ps.respInds = 1000:2000;
@@ -8,19 +8,19 @@ ps.dFBLWindowLen = 500;
 
 % Pre/post are ms before/after stimulus onset
 ps.dFWindow = [-1000,3000];
-ps.nStim = 120;
+ps.nStim = 100;
 
 % Response period length
 ps.lickWindow = 1500;
 
 % Save the processed .mat file?
-ps.save_proc = 0;
+ps.save_proc = 1;
 
 % Plot things?
 ps.plot_flg = 0;
 
 %% Plot parameters
-save = 0;
+save_plts = 0;
 folder = 'PV_CIX22_04Orientation_Figs';
 
 %% Load and reformat info
@@ -76,7 +76,7 @@ co.trials = get_stim_trials('Contrast'   , bData.orientation(1:ps.nStim), bData.
 [or.sig, or.sig_normed] =  get_signal_vecs(evoked, or.trials, nCells);
 [co.sig, co.sig_normed] =  get_signal_vecs(evoked, co.trials, nCells);
 
-% Get correlation info 
+% Get correlation info
 or.corrs = get_corrs(evoked, or.sig, or.trials, nCells);
 co.corrs = get_corrs(evoked, co.sig, or.trials, nCells);
 
@@ -100,14 +100,14 @@ if ps.save_proc
    proc.stim.contrast    = bData.contrast;
    proc.stim.orientation = bData.orientation;
 
-   save([path, ps.fname(1:(end-4)), '_proc.mat'], 'proc');
+   save([ps.path, ps.fname(1:(end-4)), '_proc.mat'], 'proc');
 end
 
 %% Plot stuff
 if ps.plot_flg
-   
-   plot_all(evoked, or.sig, or.sig_normed, or.trials, or.corrs, parsed, bData.contrast, [folder, '_O'], save)
-   plot_all(evoked, co.sig, co.sig_normed, co.trials, co.corrs, parsed, bData.contrast, [folder, '_C'], save)
+
+   plot_all(evoked, or.sig, or.sig_normed, or.trials, or.corrs, parsed, bData.contrast, [folder, '_O'], save_plts)
+   plot_all(evoked, co.sig, co.sig_normed, co.trials, co.corrs, parsed, bData.contrast, [folder, '_C'], save_plts)
 
    get_plot_SPDPs(bData, parsed, zStackCellMat, frameDelta, ps.dFWindow, somaticF)
 end
