@@ -64,5 +64,21 @@ parsed.hitRate = nPointMean(parsed.response_hits, smtWin)';
 parsed.faRate = nPointMean(parsed.response_fa, smtWin)';
 parsed.dPrime = norminv(parsed.hitRate) - norminv(parsed.faRate);
 
+
+parsed.allTrials = 1:nStim;
+
+% now find the HM trials, defined as either all hits or misses that
+% aren't nans as those would be fa/cr trials
+parsed.allHMTrials = parsed.allTrials(isnan(parsed.response_hits)==0);
+
+% likewise all catch trials are trials where either hits or misses were
+% nans
+parsed.allCatchTrials = parsed.allTrials(isnan(parsed.response_hits)==1);
+
+
+parsed.allHitTrials = intersect(parsed.allHMTrials,find(parsed.response_hits==1));
+parsed.allMissTrials = intersect(parsed.allHMTrials,find(parsed.response_miss==1));
+parsed.allFaTrials = intersect(parsed.allCatchTrials,find(parsed.response_fa==1));
+parsed.allCrTrials = intersect(parsed.allCatchTrials,find(parsed.response_cr==1));
    
 end
