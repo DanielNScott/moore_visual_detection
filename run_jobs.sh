@@ -1,6 +1,8 @@
 #!/bin/bash
 
-path='../parvalbuminCells/safe/'
+# Get the data path from the shared source file
+. ./defdatapath.sh
+#path='../parvalbuminCells/safe/'
 
 files=`ls $path`
 files=$(echo $files | tr "\s" "\n")
