@@ -66,6 +66,9 @@ dF = get_PSTH(deltaF, ps.dFWindow, ps.nStim, stimInds);
 % Get evoked activity
 evoked = get_evoked_dF(dF, ps.baseInds, ps.respInds);
 
+[DP_Thr, SP_all, DP_shuff, SP_shuff] = get_signal_probability_detect_probability(parsed,dF, ps.dFWindow, somaticF);
+
+
 %% Get derived quantities like signal vectors, noise correlations
 
 % Subdivide trials by contrast or orientation
@@ -108,7 +111,7 @@ if ps.plot_flg
 
    plot_all(evoked, or.sig, or.sig_normed, or.trials, or.corrs, parsed, bData.contrast, [folder, '_O'], save_plts)
    plot_all(evoked, co.sig, co.sig_normed, co.trials, co.corrs, parsed, bData.contrast, [folder, '_C'], save_plts)
-
-   get_plot_SPDPs(bData, parsed, zStackCellMat, frameDelta, ps.dFWindow, somaticF)
+   plot_parsed_behavior(parsed)
+   plot_signal_probability_detect_probability(SP_all, DP_Thr, DP_shuff, SP_shuff)
 end
 
