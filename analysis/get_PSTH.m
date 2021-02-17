@@ -9,7 +9,7 @@ nCells = size(deltaF,2);
 dF = zeros(nStim, windowLen, nCells);
 % Get the event triggered average for fluorescence
 for cellID = 1:nCells  
-    for stimid = 2:100
+    for stimid = 2:nStim
        windowBeg = stimInds(stimid) + pre;
        windowEnd = stimInds(stimid) + post;
        window = windowBeg:windowEnd;
