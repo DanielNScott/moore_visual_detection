@@ -1,4 +1,4 @@
-function [parsed] = parse_behavior(bData, stimSamps, lickWindow, depth, nStim)
+function [parsed] = parse_behavior(bData, stimSamps, lickWindow, depth, nStim, ps)
 
 % loop over the first one hundred trials and extract hit/miss information
 for n = 2:nStim
@@ -64,7 +64,12 @@ parsed.hitRate = nPointMean(parsed.response_hits, smtWin)';
 parsed.faRate = nPointMean(parsed.response_fa, smtWin)';
 parsed.dPrime = norminv(parsed.hitRate) - norminv(parsed.faRate);
 
+% Determine when animal stops trying
+badHR = find(parsed.hitRate <= ps.hitRateLB, 1);
+badFA = find(parsed.faRate  <= ps.faRateLB , 1);
+trunc = min(badHR,badFA) - 1;
 
+% 
 parsed.allTrials = 1:nStim;
 
 % now find the HM trials, defined as either all hits or misses that
@@ -74,11 +79,26 @@ parsed.allHMTrials = parsed.allTrials(isnan(parsed.response_hits)==0);
 % likewise all catch trials are trials where either hits or misses were
 % nans
 parsed.allCatchTrials = parsed.allTrials(isnan(parsed.response_hits)==1);
-
-
 parsed.allHitTrials = intersect(parsed.allHMTrials,find(parsed.response_hits==1));
 parsed.allMissTrials = intersect(parsed.allHMTrials,find(parsed.response_miss==1));
 parsed.allFaTrials = intersect(parsed.allCatchTrials,find(parsed.response_fa==1));
 parsed.allCrTrials = intersect(parsed.allCatchTrials,find(parsed.response_cr==1));
+
+% Truncate everything to "valid" data
+% Note: Validity is really crudely estimated currently!
+flds = fieldnames(parsed);
+for i = 1:length(flds)
+   fld = flds{i};
    
+   % Infer list type (dangerous!)
+   if length(parsed.(fld)) == nStim
+      parsed.(fld) = parsed.(fld)(1:trunc);
+   else
+      parsed.(fld) = truncate(parsed.(fld),trunc);
+   end
+end
+end
+
+function list = truncate(list, trial)
+   list = list(list <= trial);
 end

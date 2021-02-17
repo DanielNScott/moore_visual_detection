@@ -1,6 +1,6 @@
 %% Analysis parameters
 %ps.path  = './data/';
-%ps.fname = 'cix22_25Feb2019.mat';
+%ps.fname = 'cix22_04Feb2019.mat';
 
 ps.baseInds = 1:1000;
 ps.respInds = 1000:2000;
@@ -11,6 +11,9 @@ ps.dFWindow = [-1000,3000];
 
 % Response period length
 ps.lickWindow = 1500;
+
+ps.hitRateLB = 0.3;
+ps.faRateLB  = 0.02;
 
 % Save the processed .mat file?
 ps.save_proc = 1;
@@ -58,7 +61,7 @@ stimInds = sort(stimInds);
 nStim    = length(stimInds);
 
 % Parse behavior
-parsed = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim);
+parsed = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim, ps);
 
 % Get peri-stimulus time flourescence
 dF = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds);
