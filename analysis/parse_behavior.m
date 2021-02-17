@@ -1,4 +1,4 @@
-function [parsed] = parse_behavior(bData, stimSamps, lickWindow, depth, nStim, ps)
+function [parsed, trunc] = parse_behavior(bData, stimSamps, lickWindow, depth, nStim, ps)
 
 % loop over the first one hundred trials and extract hit/miss information
 for n = 2:nStim

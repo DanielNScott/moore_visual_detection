@@ -60,8 +60,9 @@ stimInds = [stimOnInds, catchOnInds];
 stimInds = sort(stimInds);
 nStim    = length(stimInds);
 
-% Parse behavior
-parsed = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim, ps);
+% Parse behavior and get last good trial number
+[parsed, nStim] = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim, ps);
+stimInds = stimInds(1:nStim);
 
 % Get peri-stimulus time flourescence
 dF = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds);
