@@ -8,7 +8,6 @@ ps.dFBLWindowLen = 500;
 
 % Pre/post are ms before/after stimulus onset
 ps.dFWindow = [-1000,3000];
-ps.nStim = 100;
 
 % Response period length
 ps.lickWindow = 1500;
@@ -56,12 +55,13 @@ deltaF  = tseries.Data;
 % Timing when stimuli occur
 stimInds = [stimOnInds, catchOnInds];
 stimInds = sort(stimInds);
+nStim    = length(stimInds);
 
 % Parse behavior
-parsed = parse_behavior(bData, stimInds, ps.lickWindow, depth, ps.nStim);
+parsed = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim);
 
 % Get peri-stimulus time flourescence
-dF = get_PSTH(deltaF, ps.dFWindow, ps.nStim, stimInds);
+dF = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds);
 
 % Get evoked activity
 evoked = get_evoked_dF(dF, ps.baseInds, ps.respInds);
@@ -72,8 +72,8 @@ evoked = get_evoked_dF(dF, ps.baseInds, ps.respInds);
 %% Get derived quantities like signal vectors, noise correlations
 
 % Subdivide trials by contrast or orientation
-or.trials = get_stim_trials('Orientation', bData.orientation(1:ps.nStim), bData.contrast(1:ps.nStim));
-co.trials = get_stim_trials('Contrast'   , bData.orientation(1:ps.nStim), bData.contrast(1:ps.nStim));
+or.trials = get_stim_trials('Orientation', bData.orientation(1:nStim), bData.contrast(1:nStim));
+co.trials = get_stim_trials('Contrast'   , bData.orientation(1:nStim), bData.contrast(1:nStim));
 
 % Get the mean signals for trial type
 [or.sig, or.sig_normed] =  get_signal_vecs(evoked, or.trials, nCells);
