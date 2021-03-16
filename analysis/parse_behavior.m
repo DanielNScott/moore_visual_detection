@@ -1,4 +1,4 @@
-function [parsed, trunc] = parse_behavior(bData, stimSamps, lickWindow, depth, nStim, ps)
+function [parsed, nStim] = parse_behavior(bData, stimSamps, lickWindow, depth, nStim, ps)
 
 % loop over the first one hundred trials and extract hit/miss information
 for n = 2:nStim
@@ -13,7 +13,8 @@ for n = 2:nStim
    if numel(tempLick)>0
       % it licked
       parsed.lick(n) = 1;
-      parsed.lickLatency(n) = tempLick(1) - stimSamps(n);
+      %parsed.lickLatency(n) = tempLick(1) - stimSamps(n);
+      parsed.lickLatency(n) = tempLick(1);
       parsed.lickCount(n) = numel(tempLick);
       if parsed.amplitude(n)>0
          parsed.response_hits(n) = 1;
@@ -86,16 +87,19 @@ parsed.allCrTrials = intersect(parsed.allCatchTrials,find(parsed.response_cr==1)
 
 % Truncate everything to "valid" data
 % Note: Validity is really crudely estimated currently!
-flds = fieldnames(parsed);
-for i = 1:length(flds)
-   fld = flds{i};
-   
-   % Infer list type (dangerous!)
-   if length(parsed.(fld)) == nStim
-      parsed.(fld) = parsed.(fld)(1:trunc);
-   else
-      parsed.(fld) = truncate(parsed.(fld),trunc);
+if ~isempty(trunc)
+   flds = fieldnames(parsed);
+   for i = 1:length(flds)
+      fld = flds{i};
+
+      % Infer list type (dangerous!)
+      if length(parsed.(fld)) == nStim
+         parsed.(fld) = parsed.(fld)(1:trunc);
+      else
+         parsed.(fld) = truncate(parsed.(fld),trunc);
+      end
    end
+   nStim = trunc;
 end
 end
 
