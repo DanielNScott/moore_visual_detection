@@ -77,7 +77,8 @@ end
 
     poolShuffAUCDP = [];
     poolShuffAUCSP = [];
-
+   
+    nwarnings = 0;
     % calculate SP and DP
     for n=1:size(somaticF,1)
         testCell = n;
@@ -87,8 +88,17 @@ end
        %shuffle for DP
         for nn = 1:100
 
-            tLabsShuff = tLabs(randperm(length(tLabs)));            
-            [aa,bb,~,cc]=perfcurve(tLabsShuff,tVals,1);            
+            tLabsShuff = tLabs(randperm(length(tLabs)));
+            try
+               [aa,bb,~,cc]=perfcurve(tLabsShuff,tVals,1);
+            catch ME
+               %disp(ME)
+               if nwarnings < 1
+                  disp('Perfcurve failure in get_signal_probability_detect_probability at line 92.')
+                  nwarnings = nwarnings + 1;
+               end
+               cc = NaN;
+            end
             poolShuffAUCDP(nn,n) = cc;
 
             clear cc tLabsShuff 

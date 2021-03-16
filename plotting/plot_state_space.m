@@ -1,7 +1,7 @@
 % Full state space
 
 % Mean over trials 
-dFm    = squeeze(mean(dF(2:55,1:1000,:),1));
+dFm    = squeeze(mean(dF(:,:,:),1));
 dFmCov = (dFm-mean(dFm,2))'*(dFm-mean(dFm,2));
 [v,d] = eig(dFmCov);
 
@@ -11,8 +11,12 @@ v = v(:,inds);
 P = v(:,1:2)';
 proj = P*dFm';
 
-dFmCOMax = squeeze(mean(dF(logical([ones(64,1); zeros(52,1)].*co.trials{3}),:,:),1));
-dFmCOMin = squeeze(mean(dF(logical([ones(64,1); zeros(52,1)].*co.trials{1}),:,:),1));
+dFmCOMax = squeeze(mean(dF(co.trials{3},:,:),1));
+dFmCOMin = squeeze(mean(dF(co.trials{1},:,:),1));
+
+
+dFmCOMax = squeeze(mean(dF(parsed.allHitTrials,:,:),1));
+dFmCOMin = squeeze(mean(dF(parsed.allMissTrials,:,:),1));
 
 proj2 = P*dFmCOMax';
 proj3 = P*dFmCOMin';

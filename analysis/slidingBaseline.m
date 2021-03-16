@@ -17,12 +17,12 @@ halfInd=fix(windowSize/2);
 
 
 padD=zeros(size(data,1),size(data,2)+windowSize);
-disp(size(padD))
+%disp(size(padD))
 
 padD(:,halfInd+1:end-halfInd)=data;
 padD(:,1:halfInd)=data(:,halfInd+1:(halfInd+1)+(halfInd-1));
 padD(:,end-(halfInd-1):end)=data(:,end-(halfInd-1):end);
-disp(size(padD))
+%disp(size(padD))
 
 startQuant=halfInd;
 if size(data,1)>1

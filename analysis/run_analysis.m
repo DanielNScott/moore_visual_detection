@@ -1,10 +1,15 @@
 %% Analysis parameters
-%ps.path  = './data/';
-%ps.fname = 'cix19_05Feb2019.mat';
+ps.path  = './data/';
+ps.fname = 'cix27_25Feb2019.mat';
 
 ps.baseInds = 1:1000;
 ps.respInds = 1000:2000;
 ps.dFBLWindowLen = 500;
+
+ps.inclPy = 1;
+
+% Force truncation of nStim for known problems
+ps.nStimMax = inf;
 
 % Pre/post are ms before/after stimulus onset
 ps.dFWindow = [-1000,3000];
@@ -14,6 +19,10 @@ ps.lickWindow = 1500;
 
 ps.hitRateLB = 0.3;
 ps.faRateLB  = 0.02;
+
+% Compute noise correlation densities over trials for every ms. 
+% (Takes a while! Make get_nc_density_dynamics faster...)
+ps.byStepNCDynamics = 0;
 
 % Save the processed .mat file?
 ps.save_proc = 1;
@@ -29,6 +38,13 @@ folder = 'PV_CIX22_04Orientation_Figs';
 % Load necessary file contents
 file = [ps.path, ps.fname];
 load(file, 'bData', 'somaticF', 'frameDelta', 'depth')
+isPy = zeros(size(somaticF,1),1);
+
+tmp = load(file, 'somaticF_PY');
+if isfield(tmp, 'somaticF_PY')
+   somaticF = [somaticF; tmp.somaticF_PY];
+   isPy = [isPy; ones(size(somaticF,1),1)];   
+end
 
 % 100k frames taken @ 30 Hz
 
@@ -58,7 +74,7 @@ deltaF  = tseries.Data;
 % Timing when stimuli occur
 stimInds = [stimOnInds, catchOnInds];
 stimInds = sort(stimInds);
-nStim    = length(stimInds);
+nStim    = min(length(stimInds), ps.nStimMax);
 
 % Parse behavior and get last good trial number
 [parsed, nStim] = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim, ps);
@@ -98,6 +114,36 @@ co.corrs = get_corrs(evoked, co.sig, or.trials, nCells);
 
 or.corrs.mnb = get_sig_vs_noise(or.corrs.sig, or.corrs.ncs, or.corrs.ncs_avg);
 co.corrs.mnb = get_sig_vs_noise(co.corrs.sig, co.corrs.ncs, co.corrs.ncs_avg);
+
+%% Slice-wise Correlations
+if ps.byStepNCDynamics
+   rho.miss = get_noise_corr_dynamics(dF, parsed.allMissTrials);
+   rho.hit  = get_noise_corr_dynamics(dF, parsed.allHitTrials );
+
+   rho.high = get_noise_corr_dynamics(dF, find(co.trials{3}) );
+   rho.low  = get_noise_corr_dynamics(dF, find(co.trials{1}) );
+
+   rho.high_miss = get_noise_corr_dynamics(dF, intersect(find(co.trials{3}),parsed.allMissTrials) );
+   rho.low_hit   = get_noise_corr_dynamics(dF, intersect(find(co.trials{1}),parsed.allHitTrials ) );
+
+   rho.high_hit = get_noise_corr_dynamics(dF, intersect(find(co.trials{3}),parsed.allHitTrials ) );
+   rho.low_miss = get_noise_corr_dynamics(dF, intersect(find(co.trials{1}),parsed.allMissTrials) );
+
+   kapa.miss = get_nc_density_dynamics(rho.miss);
+   kapa.hit  = get_nc_density_dynamics(rho.hit );
+
+   kapa.high = get_nc_density_dynamics(rho.high);
+   kapa.low  = get_nc_density_dynamics(rho.low );
+
+   kapa.high_hit = get_nc_density_dynamics(rho.high_hit);
+   kapa.low_miss = get_nc_density_dynamics(rho.low_miss);
+
+   kapa.high_miss = get_nc_density_dynamics(rho.high_miss);
+   kapa.low_hit   = get_nc_density_dynamics(rho.low_hit  );
+   
+   plot_all_ncdd(kapa)
+end
+
 
 %% Package the processed data as a structure
 if ps.save_proc

@@ -1,7 +1,7 @@
 function [parsed, nStim] = parse_behavior(bData, stimSamps, lickWindow, depth, nStim, ps)
 
 % loop over the first one hundred trials and extract hit/miss information
-for n = 2:nStim
+for n = 1:nStim
    % for touch
    %parsed.amplitude(n)=bData.c1_amp(n);
    % for vision

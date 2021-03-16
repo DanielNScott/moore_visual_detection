@@ -15,7 +15,7 @@ nCells = size(deltaF,2);
 dF = zeros(nStim, windowLen, nCells);
 % Get the event triggered average for fluorescence
 for cellID = 1:nCells
-    for stimid = 2:nStim
+    for stimid = 1:nStim
        
        % For e.g. lick latencies, some trials are NaNs
        if isnan(offsets(stimid))
@@ -30,6 +30,17 @@ for cellID = 1:nCells
           window = windowBeg:windowEnd;
 
           dF(stimid, :, cellID) = deltaF(window, cellID);
+          
+          if any(isnan(deltaF(window,cellID)))
+             message1 = ['Warning: Unexpected NaNs in deltaF for cell ' ...
+                num2str(cellID) ' between ' num2str(window(1)) ' and ' num2str(window(end))];
+             
+             message2 = ['Warning: NaNs copied into dF for cell ' num2str(cellID) ...
+                ' stim ' num2str(stimid)];
+             
+             disp(message1)
+             disp(message2)
+          end
        end
     end
 end

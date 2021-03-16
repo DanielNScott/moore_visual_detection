@@ -8,7 +8,7 @@ hold all
 plot(parsed.faRate,'b-');
 grid on
 
-legend('FA', 'Hit')
+legend('Hit', 'FA')
 xlabel('Trial Number');
 title('Hit Rate and False Alarm Rate');
 ylabel('p(H) and p(FA)')
