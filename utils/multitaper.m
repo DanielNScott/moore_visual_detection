@@ -48,7 +48,7 @@ figure()
 topf = ceil(40/freq_res);
 imagesc(t,f_grid(2:topf),mtpr_spectrogram(2:topf,:))
 set(gca, 'YDir', 'normal')
-title('Multi Taper Based Spectrogram')
+title('Multi Taper Spectrogram')
 xlabel('Time [s]')
 ylabel('Freq. [Hz]')
 

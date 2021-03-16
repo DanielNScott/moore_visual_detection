@@ -1,6 +1,6 @@
 %% Analysis parameters
 %ps.path  = './data/';
-%ps.fname = 'cix22_04Feb2019.mat';
+%ps.fname = 'cix19_05Feb2019.mat';
 
 ps.baseInds = 1:1000;
 ps.respInds = 1000:2000;
@@ -64,11 +64,20 @@ nStim    = length(stimInds);
 [parsed, nStim] = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim, ps);
 stimInds = stimInds(1:nStim);
 
+% Generate a vector of peri-stimulus times the reward was on
+rew = parsed.response_hits == 1;
+rew = rew*2000;
+rew(rew == 0) = NaN;
+
 % Get peri-stimulus time flourescence
-dF = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds);
+dF  = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds, []);
+dFL = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds, parsed.lickLatency);
+dFR = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds, rew);
 
 % Get evoked activity
-evoked = get_evoked_dF(dF, ps.baseInds, ps.respInds);
+[dF,  evoked , pAvgs , sd ] = get_evoked_dF(dF , ps.baseInds, ps.respInds);
+[dFL, evokedL, pAvgsL, sdL] = get_evoked_dF(dFL, ps.baseInds, ps.respInds);
+[dFR, evokedR, pAvgsR, sdR] = get_evoked_dF(dFR, ps.baseInds, ps.respInds);
 
 [DP_Thr, SP_all, DP_shuff, SP_shuff] = get_signal_probability_detect_probability(parsed,dF, ps.dFWindow, somaticF);
 
