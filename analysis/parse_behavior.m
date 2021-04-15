@@ -64,6 +64,8 @@ smtWin = 50;
 parsed.hitRate = nPointMean(parsed.response_hits, smtWin)';
 parsed.faRate = nPointMean(parsed.response_fa, smtWin)';
 parsed.dPrime = norminv(parsed.hitRate) - norminv(parsed.faRate);
+parsed.criterion = -(norminv(parsed.hitRate)+norminv(parsed.faRate)/2);
+
 
 % Determine when animal stops trying
 badHR = find(parsed.hitRate <= ps.hitRateLB, 1);
