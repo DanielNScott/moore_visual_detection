@@ -1,7 +1,13 @@
 %% Analysis parameters
-ps.path  = './data/';
-ps.fname = 'cix27_25Feb2019.mat';
+%ps.path  = './data/';
+%ps.fname = 'cix27_25Feb2019.mat';
+ps.path  = '/media/dan/My Passport/moore_lab_data/';
+ps.fname = 'PV6s_10_02July2021.mat';
 
+% Only parse behavior and return
+ps.behavior_only = 1;
+
+% Flourescence params
 ps.baseInds = 1:1000;
 ps.respInds = 1000:2000;
 ps.dFBLWindowLen = 500;
@@ -37,14 +43,36 @@ folder = 'PV_CIX22_04Orientation_Figs';
 %% Load and reformat info
 % Load necessary file contents
 file = [ps.path, ps.fname];
-load(file, 'bData', 'somaticF', 'frameDelta', 'depth')
-isPy = zeros(size(somaticF,1),1);
+if ps.behavior_only
+   load(file, 'bData', 'depth')
+else
+   load(file, 'bData', 'somaticF', 'frameDelta', 'depth')
+   isPy = zeros(size(somaticF,1),1);
 
-tmp = load(file, 'somaticF_PY');
-if isfield(tmp, 'somaticF_PY')
-   somaticF = [somaticF; tmp.somaticF_PY];
-   isPy = [isPy; ones(size(somaticF,1),1)];   
+   tmp = load(file, 'somaticF_PY');
+   if isfield(tmp, 'somaticF_PY')
+      somaticF = [somaticF; tmp.somaticF_PY];
+      isPy = [isPy; ones(size(somaticF,1),1)];   
+   end
 end
+
+% Considering whisker stimulation
+[stimOnInds,  ~] = getStateSamps(bData.teensyStates, 2, 1);
+[catchOnInds, ~] = getStateSamps(bData.teensyStates, 3, 1);
+
+% Timing when stimuli occur
+stimInds = [stimOnInds, catchOnInds];
+stimInds = sort(stimInds);
+nStim    = min(length(stimInds), ps.nStimMax);
+
+% Parse behavior and get last good trial number
+[parsed, nStim] = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim, ps);
+stimInds = stimInds(1:nStim);
+
+if ps.behavior_only
+   return
+end
+%----------------------------------------------------------
 
 % 100k frames taken @ 30 Hz
 
@@ -67,19 +95,6 @@ tseries = timeseries(deltaFDS', frameTimesMs);
 tseries = resample(tseries, bData.sessionTime);
 deltaF  = tseries.Data;
 
-% Considering whisker stimulation
-[stimOnInds,  ~] = getStateSamps(bData.teensyStates, 2, 1);
-[catchOnInds, ~] = getStateSamps(bData.teensyStates, 3, 1);
-
-% Timing when stimuli occur
-stimInds = [stimOnInds, catchOnInds];
-stimInds = sort(stimInds);
-nStim    = min(length(stimInds), ps.nStimMax);
-
-% Parse behavior and get last good trial number
-[parsed, nStim] = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim, ps);
-stimInds = stimInds(1:nStim);
-
 % Generate a vector of peri-stimulus times the reward was on
 rew = parsed.response_hits == 1;
 rew = rew*2000;
@@ -101,18 +116,18 @@ dFR = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds, rew);
 %% Get derived quantities like signal vectors, noise correlations
 
 % Subdivide trials by contrast or orientation
-or.trials = get_stim_trials('Orientation', bData.orientation(1:nStim), bData.contrast(1:nStim));
+%or.trials = get_stim_trials('Orientation', bData.orientation(1:nStim), bData.contrast(1:nStim));
 co.trials = get_stim_trials('Contrast'   , bData.orientation(1:nStim), bData.contrast(1:nStim));
 
 % Get the mean signals for trial type
-[or.sig, or.sig_normed] =  get_signal_vecs(evoked, or.trials, nCells);
+%[or.sig, or.sig_normed] =  get_signal_vecs(evoked, or.trials, nCells);
 [co.sig, co.sig_normed] =  get_signal_vecs(evoked, co.trials, nCells);
 
 % Get correlation info
-or.corrs = get_corrs(evoked, or.sig, or.trials, nCells);
-co.corrs = get_corrs(evoked, co.sig, or.trials, nCells);
+%or.corrs = get_corrs(evoked, or.sig, or.trials, nCells);
+co.corrs = get_corrs(evoked, co.sig, co.trials, nCells);
 
-or.corrs.mnb = get_sig_vs_noise(or.corrs.sig, or.corrs.ncs, or.corrs.ncs_avg);
+%or.corrs.mnb = get_sig_vs_noise(or.corrs.sig, or.corrs.ncs, or.corrs.ncs_avg);
 co.corrs.mnb = get_sig_vs_noise(co.corrs.sig, co.corrs.ncs, co.corrs.ncs_avg);
 
 %% Slice-wise Correlations

@@ -3,9 +3,9 @@ function [parsed, nStim] = parse_behavior(bData, stimSamps, lickWindow, depth, n
 % loop over the first one hundred trials and extract hit/miss information
 for n = 1:nStim
    % for touch
-   %parsed.amplitude(n)=bData.c1_amp(n);
+   parsed.amplitude(n)=bData.c1_amp(n);
    % for vision
-   parsed.amplitude(n)=bData.contrast(n);
+   %parsed.amplitude(n)=bData.contrast(n);
    tempLick = find(bData.thresholdedLicks(stimSamps(n):stimSamps(n)+lickWindow)==1);
    tempRun = find(bData.binaryVelocity(stimSamps(n):stimSamps(n)+ lickWindow) == 1);
    
@@ -59,11 +59,37 @@ end
 
 parsed.contrast = parsed.amplitude;
 
+parsed.response_hits_hi = parsed.response_hits;
+parsed.response_hits_hi(parsed.amplitude < 2000) = NaN;
+
+parsed.response_hits_low = parsed.response_hits;
+parsed.response_hits_low(parsed.amplitude >= 2000) = NaN;
+
 % Hit rate, false alarm rate, dPrime
-smtWin = 50;
-parsed.hitRate = nPointMean(parsed.response_hits, smtWin)';
-parsed.faRate = nPointMean(parsed.response_fa, smtWin)';
-parsed.dPrime = norminv(parsed.hitRate) - norminv(parsed.faRate);
+use_new_parse = 1;
+if use_new_parse
+   % New
+   smtWin = 31;
+   parsed.hitRate = mPointMean(parsed.response_hits, smtWin)';
+   parsed.faRate  = mPointMean(parsed.response_fa, smtWin)';
+
+   parsed.hitRateHi  = mPointMean(parsed.response_hits_hi, smtWin)';
+   parsed.hitRateLow = mPointMean(parsed.response_hits_low, smtWin)';
+   
+   parsed.dPrime    = calc_dPrime(parsed.hitRate   , parsed.faRate);
+   parsed.dPrimeHi  = calc_dPrime(parsed.hitRateHi , parsed.faRate);
+   parsed.dPrimeLow = calc_dPrime(parsed.hitRateLow, parsed.faRate);
+else
+   % OLD
+   % -------------- WARNING  --------------
+   % DO NOT USE THIS EXCEPT FOR COMPARISON!
+   % IT RETURNS INCORRECT RESULTS!
+   % --------------------------------------
+   smtWin = 50;
+   parsed.hitRate = nPointMean(parsed.response_hits, smtWin)';
+   parsed.faRate = nPointMean(parsed.response_fa, smtWin)';
+   parsed.dPrime = norminv(parsed.hitRate) - norminv(parsed.faRate);
+end
 
 % Determine when animal stops trying
 badHR = find(parsed.hitRate <= ps.hitRateLB, 1);
@@ -105,4 +131,15 @@ end
 
 function list = truncate(list, trial)
    list = list(list <= trial);
+end
+
+function dP = calc_dPrime(hr, fa)
+   len = length(hr);
+   HR_sup = find(~isnan(hr));
+   FA_sup = find(~isnan(fa));
+
+   HR_int = interp1(HR_sup, hr(HR_sup), 1:len);
+   FA_int = interp1(FA_sup, fa(FA_sup) , 1:len);
+
+   dP = norminv(HR_int) - norminv(FA_int);
 end
