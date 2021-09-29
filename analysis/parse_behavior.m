@@ -8,7 +8,7 @@ for n = 1:nStim
    %parsed.amplitude(n)=bData.contrast(n);
    tempLick = find(bData.thresholdedLicks(stimSamps(n):stimSamps(n)+lickWindow)==1);
    tempRun = find(bData.binaryVelocity(stimSamps(n):stimSamps(n)+ lickWindow) == 1);
-   
+
    % check to see if the animal licked in the window
    if numel(tempLick)>0
       % it licked
@@ -43,7 +43,7 @@ for n = 1:nStim
          parsed.response_miss(n) = NaN;
       end
    end
-   
+
    % extract whether or not the mouse ran during the report window
    if numel(tempRun) > 0
       parsed.run(n) = 1;
@@ -53,7 +53,7 @@ for n = 1:nStim
       parsed.run(n) = 0;
       parsed.vel(n) = 0;
    end
-   
+
    parsed.depth(n) = depth;
 end
 
@@ -75,11 +75,11 @@ if use_new_parse
 
    parsed.hitRateHi  = mPointMean(parsed.response_hits_hi, smtWin)';
    parsed.hitRateLow = mPointMean(parsed.response_hits_low, smtWin)';
-   
+
    parsed.dPrime    = calc_dPrime(parsed.hitRate   , parsed.faRate);
    parsed.dPrimeHi  = calc_dPrime(parsed.hitRateHi , parsed.faRate);
    parsed.dPrimeLow = calc_dPrime(parsed.hitRateLow, parsed.faRate);
-   
+
 
    FA_sup = find(~isnan(parsed.faRate));
    if ~isempty(FA_sup)
@@ -105,7 +105,7 @@ badHR = find(parsed.hitRate <= ps.hitRateLB, 1);
 badFA = find(parsed.faRate  <= ps.faRateLB , 1);
 trunc = min(badHR,badFA) - 1;
 
-% 
+%
 parsed.allTrials = 1:nStim;
 
 % now find the HM trials, defined as either all hits or misses that
@@ -146,7 +146,7 @@ function dP = calc_dPrime(hr, fa)
    len = length(hr);
    HR_sup = find(~isnan(hr));
    FA_sup = find(~isnan(fa));
-   
+
    if ~isempty(FA_sup) && ~isempty(HR_sup)
       HR_int = interp1(HR_sup, hr(HR_sup), 1:len);
       FA_int = interp1(FA_sup, fa(FA_sup) , 1:len);
