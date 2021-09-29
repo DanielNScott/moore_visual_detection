@@ -1,4 +1,4 @@
-function [] = plot_parsed_behavior(parsed)
+function [] = plot_parsed_behavior(parsed, visibility)
 
 % Pull things out for easy plotting
 hits = parsed.response_hits;
@@ -13,7 +13,7 @@ cr(cr == 0) = NaN;
 fa = parsed.response_fa;
 fa(fa == 0) = NaN;
 
-figure('Visible','Off')
+figure('Visible',visibility)
 subplot(3,1,1)
 plot(parsed.hitRate,'o', 'LineWidth', 2)
 hold on
@@ -44,15 +44,18 @@ ylabel('p(H) and p(FA)')
 ylim([0,1]);
 
 
+valid_msk = and((parsed.dPrimeHi > 1.2),(parsed.faCont <= 0.35));
+
 subplot(3,1,3)
 %d' plot
 plot(parsed.dPrime   ,'k-', 'LineWidth', 2); hold on;
 plot(parsed.dPrimeHi , 'LineWidth', 2)
 plot(parsed.dPrimeLow, 'LineWidth', 2)
+plot(valid_msk, 'kx', 'LineWidth', 2);
 
 xlabel('Trial Number');
 title('D Prime')
-legend({'d-prime','d-prime high', 'd-prime low'})
+legend({'d-prime','d-prime high', 'd-prime low', 'Valid'})
 ylabel('d Prime')
 ylim([-0.5,3])
 grid on

@@ -1,8 +1,8 @@
 %% Analysis parameters
 %ps.path  = './data/';
 %ps.fname = 'cix27_25Feb2019.mat';
-ps.path  = '/media/dan/My Passport/moore_lab_data/';
-ps.fname = 'PV6s_10_02July2021.mat';
+%ps.path  = '/media/dan/My Passport/moore_lab_data/';
+%ps.fname = 'PV6s_10_02July2021.mat';
 
 % Only parse behavior and return
 ps.behavior_only = 1;
@@ -44,7 +44,8 @@ folder = 'PV_CIX22_04Orientation_Figs';
 % Load necessary file contents
 file = [ps.path, ps.fname];
 if ps.behavior_only
-   load(file, 'bData', 'depth')
+   load(file, 'bData')
+   depth = NaN;
 else
    load(file, 'bData', 'somaticF', 'frameDelta', 'depth')
    isPy = zeros(size(somaticF,1),1);

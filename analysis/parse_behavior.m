@@ -79,6 +79,15 @@ if use_new_parse
    parsed.dPrime    = calc_dPrime(parsed.hitRate   , parsed.faRate);
    parsed.dPrimeHi  = calc_dPrime(parsed.hitRateHi , parsed.faRate);
    parsed.dPrimeLow = calc_dPrime(parsed.hitRateLow, parsed.faRate);
+   
+
+   FA_sup = find(~isnan(parsed.faRate));
+   if ~isempty(FA_sup)
+      parsed.faCont = interp1(FA_sup, parsed.faRate(FA_sup) , 1:length(parsed.faRate));
+   else
+      parsed.faCont = nan(1,length(parsed.faRate));
+   end
+
 else
    % OLD
    % -------------- WARNING  --------------
@@ -137,9 +146,13 @@ function dP = calc_dPrime(hr, fa)
    len = length(hr);
    HR_sup = find(~isnan(hr));
    FA_sup = find(~isnan(fa));
+   
+   if ~isempty(FA_sup) && ~isempty(HR_sup)
+      HR_int = interp1(HR_sup, hr(HR_sup), 1:len);
+      FA_int = interp1(FA_sup, fa(FA_sup) , 1:len);
 
-   HR_int = interp1(HR_sup, hr(HR_sup), 1:len);
-   FA_int = interp1(FA_sup, fa(FA_sup) , 1:len);
-
-   dP = norminv(HR_int) - norminv(FA_int);
+      dP = norminv(HR_int) - norminv(FA_int);
+   else
+      dP = nan(1,len);
+   end
 end
