@@ -65,6 +65,12 @@ parsed.response_hits_hi(parsed.amplitude < 2000) = NaN;
 parsed.response_hits_low = parsed.response_hits;
 parsed.response_hits_low(parsed.amplitude >= 2000) = NaN;
 
+parsed.response_miss_hi = parsed.response_miss;
+parsed.response_miss_hi(parsed.amplitude < 2000) = NaN;
+
+parsed.response_miss_low = parsed.response_miss;
+parsed.response_miss_low(parsed.amplitude >= 2000) = NaN;
+
 % Hit rate, false alarm rate, dPrime
 use_new_parse = 1;
 if use_new_parse
@@ -79,7 +85,6 @@ if use_new_parse
    parsed.dPrime    = calc_dPrime(parsed.hitRate   , parsed.faRate);
    parsed.dPrimeHi  = calc_dPrime(parsed.hitRateHi , parsed.faRate);
    parsed.dPrimeLow = calc_dPrime(parsed.hitRateLow, parsed.faRate);
-
 
    FA_sup = find(~isnan(parsed.faRate));
    if ~isempty(FA_sup)
