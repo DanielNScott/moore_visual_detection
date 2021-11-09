@@ -23,7 +23,6 @@ function [] = plot_zscored_evoked(evoked, stim_trials, save)
    
    if save
       saveas(gcf,'Evoked-dfbyF.png');
-      saveas(gcf,'Evoked-dfbyF.fig');
    end
 
 end

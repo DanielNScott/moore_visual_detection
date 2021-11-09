@@ -26,9 +26,13 @@ for cellID = 1:nCells
           
           % Generic PSTH windowing, shifted by offset
           windowBeg = stimInds(stimid) + offsets(stimid) + pre;
-          windowEnd = stimInds(stimid) + offsets(stimid) + post;
+          windowEnd = stimInds(stimid) + post;
           window = windowBeg:windowEnd;
 
+          % For indexing errors...
+          % disp(max(window))
+          
+          % Copy / cut out the data.
           dF(stimid, :, cellID) = deltaF(window, cellID);
           
           if any(isnan(deltaF(window,cellID)))

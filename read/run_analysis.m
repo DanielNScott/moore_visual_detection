@@ -1,40 +1,4 @@
-%% Analysis parameters
-%ps.path  = './data/';
-%ps.fname = 'cix27_25Feb2019.mat';
-%ps.path  = '/media/dan/My Passport/moore_lab_data/';
-%ps.fname = 'PV6s_10_02July2021.mat';
 
-% Only parse behavior and return
-ps.behavior_only = 1;
-
-% Flourescence params
-ps.baseInds = 1:1000;
-ps.respInds = 1000:2000;
-ps.dFBLWindowLen = 500;
-
-ps.inclPy = 1;
-
-% Force truncation of nStim for known problems
-ps.nStimMax = inf;
-
-% Pre/post are ms before/after stimulus onset
-ps.dFWindow = [-1000,3000];
-
-% Response period length
-ps.lickWindow = 1500;
-
-ps.hitRateLB = 0.3;
-ps.faRateLB  = 0.02;
-
-% Compute noise correlation densities over trials for every ms. 
-% (Takes a while! Make get_nc_density_dynamics faster...)
-ps.byStepNCDynamics = 0;
-
-% Save the processed .mat file?
-ps.save_proc = 1;
-
-% Plot things?
-ps.plot_flg = 0;
 
 %% Plot parameters
 save_plts = 0;
@@ -43,75 +7,48 @@ folder = 'PV_CIX22_04Orientation_Figs';
 %% Load and reformat info
 % Load necessary file contents
 file = [ps.path, ps.fname];
-if ps.behavior_only
-   load(file, 'bData')
-   depth = NaN;
-else
-   load(file, 'bData', 'somaticF', 'frameDelta', 'depth')
-   isPy = zeros(size(somaticF,1),1);
 
-   tmp = load(file, 'somaticF_PY');
-   if isfield(tmp, 'somaticF_PY')
-      somaticF = [somaticF; tmp.somaticF_PY];
-      isPy = [isPy; ones(size(somaticF,1),1)];   
-   end
-end
-
-% Considering whisker stimulation
-[stimOnInds,  ~] = getStateSamps(bData.teensyStates, 2, 1);
-[catchOnInds, ~] = getStateSamps(bData.teensyStates, 3, 1);
-
-% Timing when stimuli occur
-stimInds = [stimOnInds, catchOnInds];
-stimInds = sort(stimInds);
-nStim    = min(length(stimInds), ps.nStimMax);
-
-% Parse behavior and get last good trial number
-[parsed, nStim] = parse_behavior(bData, stimInds, ps.lickWindow, depth, nStim, ps);
-stimInds = stimInds(1:nStim);
-
-if ps.behavior_only
-   return
-end
 %----------------------------------------------------------
 
-% 100k frames taken @ 30 Hz
+% Load behavior
+if ps.re_parse_behavior
+   parsed = parse_behavior_from_file(ps);
+else
+   load([file(1:(end-4)) '_parsed.mat'])
+end
 
-% Align sample frequencies
-% frametimes: timing of frames in ms
-% imTime: timing in seconds
-[nCells, nFrames] = size(somaticF);
-ms2s = 1000;
+% Load fluorescence
+fluor = parse_fluorescence_from_file(file, ps, parsed);
 
-frameTimes   = (frameDelta:frameDelta:frameDelta*nFrames)*ms2s;
-frameTimesMs = frameTimes/ms2s;
+% Load data quality
+load(ps.dqualf)
 
-% baseline data with df/f
-blCutOffs    = computeQuantileCutoffs(somaticF);
-somaticF_BLs = slidingBaseline(somaticF, ps.dFBLWindowLen, blCutOffs);
-deltaFDS     = (somaticF - somaticF_BLs)./somaticF_BLs;
+% Get the valid data masks
+[valid_msk, valid_trls] = get_valid_from_file(ps, dqual);
 
-% upsample data
-tseries = timeseries(deltaFDS', frameTimesMs);
-tseries = resample(tseries, bData.sessionTime);
-deltaF  = tseries.Data;
+% Get a censored parsed structure
+parsed_c = censor_parsed(parsed, valid_msk, valid_trls);
 
-% Generate a vector of peri-stimulus times the reward was on
-rew = parsed.response_hits == 1;
-rew = rew*2000;
-rew(rew == 0) = NaN;
+% Censor arrays
+fluor.dFc  = fluor.dF( valid_msk, :, :);
+%dFLc = dFL(valid_msk, :, :);
+%dFRc = dFR(valid_msk, :, :);
 
-% Get peri-stimulus time flourescence
-dF  = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds, []);
-dFL = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds, parsed.lickLatency);
-dFR = get_PSTH(deltaF, ps.dFWindow, nStim, stimInds, rew);
+fluor.evokedc  = fluor.evoked( :, valid_msk);
+%evokedLc = evokedL(:, valid_msk);
+%evokedRc = evokedR(:, valid_msk);
 
-% Get evoked activity
-[dF,  evoked , pAvgs , sd ] = get_evoked_dF(dF , ps.baseInds, ps.respInds);
-[dFL, evokedL, pAvgsL, sdL] = get_evoked_dF(dFL, ps.baseInds, ps.respInds);
-[dFR, evokedR, pAvgsR, sdR] = get_evoked_dF(dFR, ps.baseInds, ps.respInds);
 
-[DP_Thr, SP_all, DP_shuff, SP_shuff] = get_signal_probability_detect_probability(parsed,dF, ps.dFWindow, somaticF);
+return
+
+%%%% Unreachable analyses
+
+% SPs are still using contrast, which is kind of hacked
+[DP_Thr  , SP_all  , DP_shuff  , SP_shuff  ] = get_SPDP(parsed  , dF, ps.dFWindow);
+[DP_Thr_c, SP_all_c, DP_shuff_c, SP_shuff_c] = get_SPDP(parsed_c, dF, ps.dFWindow);
+
+% 
+slevs = get_contrast_levels(parsed_c.contrast);
 
 
 %% Get derived quantities like signal vectors, noise correlations

@@ -1,4 +1,4 @@
-function [] = plot_all(evoked, sig, sig_normed, stim_trials, corrs, parsed, contrast, sd, folder, save)
+function [] = plot_all_old(evoked, sig, sig_normed, stim_trials, corrs, parsed, contrast, sd, folder, save)
 
 % Make Plots
 close all;

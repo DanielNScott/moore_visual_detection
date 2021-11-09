@@ -1,100 +1,93 @@
-# moore_visual_detection
+# Project & code details #
 
-----------------------------------------------------\
-% Notes from November 19th Meeting
+## File / folder organization ##
+The folder hierarchy is:
+- analy - data analysis functions
+- clust - cluster utilities such as submission scripts
+- data - storage folder, unversioned except for ms
+   - ms - manuscript figures / tables
+- depr - deprecated (things that have been replaced and will be deleted soon)
+- inc - incomplete files
+- misc - things we don't know what to do with yet
+- plot - plotting functions
+- read - tools for reading data into matlab
+- tools - project specific data tools that don't go elsewhere
+- utils - tools which can also be copied and used on other projects
 
-Ian added noise correlation code for pairwise cells
+Some distinctions:
+- a tool is something like a data extractor (e.g. get_contrast_levels)
+- an analysis is something that requires extensive processing and yields "new" info
 
-Dan added the signal correlation and NC x SC
+## Data import and analysis ##
+Our data processing is split into three components:
+1) Read the matlab files produced by each recording session. 
+2) Process the data into equiv. structures by subsetting it (e.g. valid data).
+3) Apply analyses which generate further derived quantities
+4) Programatically produce various plots and statistical tests.
 
-Ian will run rSignal, rNoise, OSI across data set
+Notes / rationale:
+- Step (1) derives behavioral quantities necessary for subsetting valid data
+- Step (1) produces a data structure `mus` with all sessions and metadata
+- Step (2) allows further processing with equivalent code on any subsets.
+- Step (3) lets us keep unneccessary analyses from slowing down (1).
 
-Dan will work with correlations on one session
-- we will use github
 
-----------------------------------------------------
-% Notes from December 2nd 2020 Meeting
+- Generally, analyses and plots can then be done by iterating (3) and (4).
 
-Days 1-7 learning - Ian will code NC VS SC for first 
-and last day 
+## Data organization ##
+Step (1) above reads the data into a structure `mus`. This structure has the following format.
 
-Clustering through different learning mechanisms
-- eigenvalues clusters change with learning
+```matlab
+% Abbreviated field name key by hierarchy depth:
+%
+% 1) mus = mouse/mice
+%
+% 2) bhv = behavior
+%    PVs = PV cell Ca2+ fluorescence
+%    PYs = PY cell Ca2+ fluorescence
+%    nfo = metadata for session
+%    mta = metadata for mouse
+%    xmi = cross modal info such as "signal prob."
+%    msc = miscellany not categorizable as above
+%
+% 3) msk = mask fields (e.g. hit trial mask)
+%    nds = linaer index fields (e.g. hit trial numbers) 
+%
+% Mouse number (mnum) and day number (day) are sequential.
+%
+% Field list / access examples:
 
-Contrast involved - Dan will implement contrast as 
-opposed to orientation 
+mus{mnum}.bhv{day}.lick_latency
+mus{mnum}.bhv{day}...
+mus{mnum}.bhv{day}.msk.rew
+mus{mnum}.bhv{day}.msk.hits
+mus{mnum}.bhv{day}...
+mus{mnum}.bhv{day}.nds.rew
+mus{mnum}.bhv{day}...
 
-Hit Miss CR FA - we should analyze data in terms of 
-these trial types
+mus{mnum}.PVs{day}.dF
+mus{mnum}.PVs{day}.zF
+mus{mnum}.PVs{day}.ev
+mus{mnum}.PVs{day}...
 
-Behavior GitHub script -  Ian will add code to parse 
-the behavior
+mus{mnum}.PYs{day}...
 
-Upcoming Analyses = 
-- Neurometric Function
-- Psychometric Function
+mus{mnum}.nfo{day}.trl_cnt
+mus{mnum}.nfo{day}.vld_cnt
+mus{mnum}.nfo{day}.vld_frc
+mus{mnum}.nfo{day}.depths
+mus{mnum}.nfo{day}...
 
-Contrast Bins ~ 1-5, 10-30, 50-100
+mus{mnum}.mta.id
+mus{mnum}.mta.files
+mus{mnum}.mta...
 
-----------------------------------------------------
-% Notes from December 8th 2020 Meeting
+mus{mnum}.xmi{day}.DP
+mus{mnum}.xmi{day}.SP
+mus{mnum}.xmi{day}.neurometric
+mus{mnum}.xmi{day}...
+```
 
-Added behavioral code for parsing hit and miss data 
+Steps 2 and 3 maintain this format. Sub-formats of PVs and PYs should be identical.
 
-Noise correlation of hit and miss cells and OSI
-
-Dan is going to add contrast 
-- compare learning of contrast vs. orientation
-- psychometric function
-
-Ian will pull slope and intercept of NCxSC plots over
-the data set
-
-----------------------------------------------------
-% Notes from January 14th 2021 Meeting
-
-Ian added code for neurometric and psychometric functions
-- neurometric functions are going to be changed to be z scored
-
-Dan is looking at the trial cross correlation instead of mean
-
-We are going to add SC x NC across each days of training
-
-Ian is working on getting all data to the cluster
-- the current data set does not have all days in a row
-- current data is pulled from sessions with 100 trials
-
-----------------------------------------------------
-% Notes from January 18th 2021 Meeting with Chris M and Chris M
-
-Moore Project 21-18-12 (yy-mm-dd)
-
-Attendance:
-- Ian More (IM), Chris Moore (CM), Chris Deister (CD), Dan Scott (DS)
-
-Topics discussed:
-- Autocorr, xcorr, and multitaper indications of ~12.5 Hz power peak
-- Decreasing slopes and increasing intercepts of the signal to noise relationships
-- Xcorr noise correlation as a (not very informative) noise correlation metric to be used alongside total evoked NC.
-- PSTH piecewise linear fit
-
-Commentary from CD, CM:
-- PV cells with this gcamp are in bottom of fluorescence-by-CA concentration curve, so indicator not very sensitive
-- Distribution of flourescence gets skewed by activity - different distributions for different mean rates
-- This is because the PV cells are heavily calcium buffered
-- Usually ranking of activity values is used to give baseline between 10 and 15th percentile of fluorescence
-
-Suggestions:
-- Consider high-pass filtering the data as part of the baselining procedure
-- Apply OASIS (deconvolution / spike inference) and look to see what it's doing to baseline as well.
-- Look at different baselining procedures for various asymptotic exemplars of the data to see how they compare
-- Two asymptotic exemplar timeseries to be sure to compare with is neuropil ROI and average over such ROIs
-- Would hope that somatic rhythmicity would not show up in neuropil if it is not of nuisance physiological origin
-- Heart rate might give ~12 Hz
-- Check out original gcamp 6 paper to see how they're baselining
-- Check out fig 4 of Hyeyoung's paper from last year
-
-Additional:
-- In prev. discussion IM says Hyeyoung's work found higher baseline activity in detect trials
-- Noted that higher beta gives more non-detection in CM & Stephanie Jones' work
-- CM work indicates more gamma implies less detection
+## Example script and function usage ##

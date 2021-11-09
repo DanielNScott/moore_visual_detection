@@ -2,6 +2,8 @@
 path      = '/media/dan/My Passport/moore_lab_data_behavior/';
 visible   = 'Off';
 plot_figs = 0;
+
+ftype = 'full';
 %id_select = [10, 13];
 
 % Just set these to any mouse ids you want that have files
@@ -69,7 +71,11 @@ function dqual = parse_behavior_loop(files, dqual, path, plot_figs, visible)
       % Behavioral analysis
       if any(id == dqual.ids)
          ps.behavior_only = 1;
-         run_analysis;
+         parsed = parse_behavior_from_file(ps);
+         
+         % Save parsed data to a mat file
+         parsed_file = ['./data/' ps.fname(1:(end-4)), '_parsed.mat'];
+         save(parsed_file, 'parsed')
 
          valid_msk = and((parsed.dPrimeHi > 1.2),(parsed.faCont <= 0.35));
 
