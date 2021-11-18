@@ -1,4 +1,4 @@
-function fluor = parse_fluorescence_from_file(file, ps, parsed, stimInds)
+function flr = parse_fluorescence_from_file(file, ps, parsed, stimInds, filter)
 
 load(file, 'bData', 'somaticF', 'frameDelta', 'depth')
 isPy = zeros(size(somaticF,1),1);
@@ -26,8 +26,11 @@ blCutOffs    = computeQuantileCutoffs(somaticF);
 somaticF_BLs = slidingBaseline(somaticF, ps.dFBLWindowLen, blCutOffs);
 deltaFDS     = (somaticF - somaticF_BLs)./somaticF_BLs;
 
+% Smooth the data with whatever filter was supplied
+deltaFDS = filtfilt(filter, deltaFDS');
+
 % upsample data
-tseries = timeseries(deltaFDS', frameTimesMs);
+tseries = timeseries(deltaFDS, frameTimesMs);
 tseries = resample(tseries, bData.sessionTime);
 deltaF  = tseries.Data;
 
@@ -39,13 +42,13 @@ dF = get_PSTH(deltaF, ps.dFWindow, parsed.n_trials, stimInds, []);
 %dFL = get_PSTH(deltaF, ps.dFWindow, n_trials, stimInds, parsed.lickLatency);
 %dFR = get_PSTH(deltaF, ps.dFWindow, n_trials, stimInds, rew);
 
+flr = struct();
+flr.dF = dF;
+
 % Get evoked activity
-[zF,  ev , ~, ~] = get_evoked_dF(dF , ps.baseInds, ps.respInds);
+% flr = get_evoked_dF(flr, dF);
 %[dFL, evokedL, ~, ~] = get_evoked_dF(dFL, ps.baseInds, ps.respInds);
 %[dFR, evokedR, ~, ~] = get_evoked_dF(dFR, ps.baseInds, ps.respInds);
 
-fluor.dF = dF;
-fluor.zF = zF;
-fluor.ev = ev;
 
 end

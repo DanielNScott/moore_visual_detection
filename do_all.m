@@ -8,6 +8,9 @@ mus = align_data(mus);
 % Censor the data to valid trials
 cen = censor_data(mus);
 
+% Add a bunch of processed fluorescence
+cen = add_flr(cen);
+
 
 % Now we can plot everything for the valid data
 plot_all(cen, ', Valid')
@@ -26,5 +29,5 @@ tmp = censor_data(cen, 'fa');
 plot_all(tmp, 'Valid Miss')
 
 
-tmp = censor_data(cen, 'fa');
-plot_all(tmp, 'Valid Miss')
+tmp = censor_data(cen, 'cr');
+plot_all(tmp, 'Valid CR')

@@ -1,4 +1,4 @@
-function [dF] = get_PSTH(deltaF, dFWindow, nStim, stimInds, offsets)
+function dF = get_PSTH(deltaF, dFWindow, nStim, stimInds, offsets)
 
 % This is a list of offsets to the stimulus time centering. 
 if isempty(offsets)
@@ -31,6 +31,10 @@ for cellID = 1:nCells
 
           % For indexing errors...
           % disp(max(window))
+          if windowEnd > length(deltaF(:,cellID))
+             nStim = stimid - 1;
+             break
+          end
           
           % Copy / cut out the data.
           dF(stimid, :, cellID) = deltaF(window, cellID);
@@ -48,5 +52,8 @@ for cellID = 1:nCells
        end
     end
 end
+
+% Remove trailing indices if there were no data
+dF = dF(1:nStim,:,:);
 
 end

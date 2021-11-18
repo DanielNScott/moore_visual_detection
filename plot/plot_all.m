@@ -148,6 +148,30 @@ for mnum = 1:length(mus)
          end
       end
       
+      if any(strcmp(sel, 'typed'))
+         msks = {'hit', 'miss'};
+         plot_flr_dF_typed_grid(mus{mnum}.PVs{dnum}, mid, dstr, msks)
+         
+         export_fig([mus_path, tstr , ', Cells', desc, ', typed-hm'])
+         close all
+         
+         %msks = {'fa' , 'cr'};
+         %plot_flr_dF_typed_grid(mus{mnum}.PVs{dnum}, mid, dstr, msks)
+         
+         %export_fig([mus_path, tstr , ', Cells', desc, ', typed-facr'])
+         %close all
+         
+         ncells = size(mus{mnum}.PVs{dnum}.dF,3); % This should use a stored variable
+         date_path = [mus_path, dstr, '-Cells/'];
+         mkdir(date_path)
+         for cnum = 1:ncells
+            plot_flr_rpbm_both(mus{mnum}.PVs{dnum}, mid, dstr, cnum)
+            
+            fname = [date_path, tstr , ', Cell ', fmt(cnum), desc, ', typed'];
+            export_fig(fname)
+            close all
+         end
+      end
       
    end % day loop
 end % mouse loop

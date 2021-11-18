@@ -8,7 +8,9 @@ elseif nargin == 2
 else
    error('Second argument should be a field name to use as a mask.')
 end
-   
+
+% Critical fields
+key_flds = {'hit', 'miss', 'fa', 'cr'};
 
 % Loop over mice
 for mnum = 1:numel(mus)
@@ -19,6 +21,9 @@ for mnum = 1:numel(mus)
    % Remove any days with no imaging
    for dnum = 1:ndays
       
+      % Whole day removal flag
+      rm = 0;
+      
       % Alias (or, since matlab, copy)
       % Inefficient, but easier to read, and not a big deal.
       bhv = mus{mnum}.bhv{dnum};
@@ -28,6 +33,11 @@ for mnum = 1:numel(mus)
       % If an alternative mask is supplied, nans => zeros.
       msk = mus{mnum}.bhv{dnum}.msk.(cfld);
       msk = logical(msk == 1);
+      
+      % Sometimes the fluorescence data ends early
+      lflr = size(PVs.dF,1);
+      msk(lflr:end) = 0;
+      ind = ind(ind < lflr);
             
       % Strip the derived psychometric quantities
       mus{mnum}.bhv{dnum} = rem_psychometric(bhv);
@@ -41,11 +51,22 @@ for mnum = 1:numel(mus)
       mus{mnum}.bhv{dnum} = add_psychometric(bhv);
       
       % Censor fluorescence
-      mus{mnum}.PVs{dnum} = censor_fluor(PVs, msk);
+      mus{mnum}.PVs{dnum} = censor_fluor(PVs, msk(1:lflr));
       
+      % Critical fields we want stats on
+      for fs = key_flds
+         rm = or(nansum(mus{mnum}.bhv{dnum}.msk.(fs{1})) < 3, rm);
+      end
+      
+      % Remove
+      if rm
+         mus{mnum}.bhv{dnum} = [];
+      end
    end
-
 end
+
+% Remove any mice/days that were set as empty
+mus = align_data(mus);
 
 % Recompute valid stats
 mus = add_stats_valid(mus);
@@ -55,9 +76,25 @@ end
 function fluor = censor_fluor(fluor, valid_msk)
 
 if ~isempty(fluor)
+   % Should be programmatic but...
+   
    fluor.dF  = fluor.dF(valid_msk, :, :);
-   fluor.zF  = fluor.zF(valid_msk, :, :);
-   fluor.ev  = fluor.ev(:, valid_msk);
+%    fluor.zF  = fluor.zF(valid_msk, :, :);
+%    
+%    fluor.bsd = fluor.bsd(valid_msk, :);
+%    
+%    fluor.ev  = fluor.ev(valid_msk, :);
+%    fluor.p1  = fluor.p1(valid_msk, :);
+%    fluor.p2  = fluor.p2(valid_msk, :);
+%    fluor.p3  = fluor.p3(valid_msk, :);
+%    fluor.p4  = fluor.p4(valid_msk, :);
+%    
+%    fluor.p1sd  = fluor.p1sd(valid_msk, :);
+%    fluor.p2sd  = fluor.p2sd(valid_msk, :);
+%    fluor.p3sd  = fluor.p3sd(valid_msk, :);
+%    fluor.p4sd  = fluor.p4sd(valid_msk, :);
+   
+   % ... sometimes this is fine.
 end
 
 end

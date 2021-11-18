@@ -138,7 +138,7 @@ bhv.nds.stim  = bhv.nds.all( isnan( bhv.msk.hit ) == 0);
 bhv.nds.catch = bhv.nds.all( isnan( bhv.msk.hit ) == 1);
 
 % Indices for hit, miss, fa, cr trials
-bhv.nds.hit  = find(bhv.msk.hit == 1);
+bhv.nds.hit  = find(bhv.msk.hit  == 1);
 bhv.nds.miss = find(bhv.msk.miss == 1);
 bhv.nds.fa   = find(bhv.msk.fa   == 1);
 bhv.nds.cr   = find(bhv.msk.cr   == 1);
@@ -171,13 +171,17 @@ bhv.rew = rew';
 
 bhv.n_trials = n_trials;
 
-
 % Append the psychometric data
 bhv = add_psychometric(bhv);
 
 % Make everything have the same indexing b.c. one of us is OCD.
 % In truth, this is useful because then you can visually check dimensions quickly.
 bhv = to_cols(bhv);
+
+% Make everything that is a mask variable an actual mask!
+% The nans above were used for derived calculations.
+% This should really just be done above, and those calcs should be fixed.
+bhv.msk = nans_to_msk(bhv.msk);
 
 end
 
@@ -223,6 +227,22 @@ function bhv = to_cols(bhv)
          % Else make column
          bhv.(fs) = bhv.(fs)(:);
       end
+   end
+
+end
+
+% Turns every vector into a column
+function msks = nans_to_msk(msks)
+
+   % List all the field names
+   fields = fieldnames(msks);
+   
+   % Iterate over them
+   for fs = fields'
+      fs = fs{:};
+      
+      % Else make column
+      msks.(fs) = logical(to_zero(msks.(fs),NaN));
    end
 
 end
