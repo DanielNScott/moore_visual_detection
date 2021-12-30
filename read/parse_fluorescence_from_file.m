@@ -1,4 +1,4 @@
-function flr = parse_fluorescence_from_file(file, ps, parsed, stimInds, filter)
+function [flr, depth] = parse_fluorescence_from_file(file, ps, parsed, stimInds, filter)
 
 load(file, 'bData', 'somaticF', 'frameDelta', 'depth')
 isPy = zeros(size(somaticF,1),1);
@@ -29,10 +29,14 @@ deltaFDS     = (somaticF - somaticF_BLs)./somaticF_BLs;
 % Smooth the data with whatever filter was supplied
 deltaFDS = filtfilt(filter, deltaFDS');
 
-% upsample data
+% Upsample data
+warning on
+warning('Resample may attempt to extrapolate. Suppressing warning...')
+warning off
 tseries = timeseries(deltaFDS, frameTimesMs);
 tseries = resample(tseries, bData.sessionTime);
 deltaF  = tseries.Data;
+warning on
 
 % Get peri-stimulus time flourescence
 dF = get_PSTH(deltaF, ps.dFWindow, parsed.n_trials, stimInds, []);

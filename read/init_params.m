@@ -24,7 +24,12 @@ function ps = init_params(ps)
    ps.dFWindow = [-1000,3000];
 
    % Response period length
-   ps.lickWindow = 1500;
+   ps.lickWindow = 1000;
+   ps.epochs{1} = -1000:0;
+   ps.epochs{2} =  1:1000;
+   ps.epochs{3} =  1001:2000;
+   ps.epochs{4} =  2001:3000;
+   
 
    ps.hitRateLB = 0.3;
    ps.faRateLB  = 0.02;

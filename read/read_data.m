@@ -10,20 +10,16 @@ fmt       = 'full';
 ids = [10];
 
 % Date range (YYY, MM, DD) to keep files from.
-beg = [2021, 6, 15];
-fin = [2021, 6, 15];
+beg = [2021, 6, 25];
+fin = [2021, 6, 25];
 
 % A list which, if not empty, supercedes the above
-dlist =[];
-%dlist = [...
-%   2021, 6, 11; ...
-%   2021, 6, 15; ...
-%   2021, 6, 17; ...
-%   2021, 6, 18; ...
-%   2021, 6, 24; ...
-%   2021, 6, 25; ...
-%   2021, 6, 29; ...
-%   2021, 6, 30];
+%dlist = [];
+dlist = [...
+  2021, 6, 24; ...
+  2021, 6, 25; ...
+  2021, 6, 29; ...
+  2021, 6, 30];
    
 % Parameters establishing data validity
 ps.min_dP_hi = 1.2;
@@ -141,22 +137,23 @@ function mus = read_behavior_loop(files, ids, path, fmt, ps, filter)
       end
         
       % Get behavior
-      try
+      %try
          [bhv, stimInds] = parse_behavior_from_file(ps);
          mus{mnum}.bhv{dnum} = bhv;
          got_behavior = 1;
-      catch ME
-         warning(ME.message)
-         got_behavior = 0;
-      end
+      %catch ME
+      %   warning(ME.message)
+      %   got_behavior = 0;
+      %end
 
       % Get fluorescence
-      try
-         PVs = parse_fluorescence_from_file([ps.path ps.fname], ps, bhv, stimInds, filter);
+      %try
+         [PVs, depth] = parse_fluorescence_from_file([ps.path ps.fname], ps, bhv, stimInds, filter);
          mus{mnum}.PVs{dnum} = PVs;
-      catch ME
-         warning(ME.message)
-      end
+         mus{mnum}.bhv{dnum}.depth = depth;
+      %catch ME
+      %   warning(ME.message)
+      %end
 
       if got_behavior == 1
          valid_msk  = and((bhv.dPrimeHi > ps.min_dP_hi),(bhv.faCont <= ps.max_fa));

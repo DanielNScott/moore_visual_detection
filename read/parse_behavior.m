@@ -1,4 +1,4 @@
-function bhv = parse_behavior(bData, stimSamps, lickWindow, depth, n_trials, ps)
+function bhv = parse_behavior(bData, stimSamps, epochs, depth, n_trials, ps)
 
 % Loop over the trials, extract hit/miss info
 for n = 1:n_trials
@@ -8,20 +8,57 @@ for n = 1:n_trials
    % For touch. For vision use contrast.
     bhv.amp(n) = bData.c1_amp(n);
 
-   % Peri stimulus time window 
-   window = stimSamps(n):(stimSamps(n)+lickWindow);
-   
-   % Find any lick times and msk.run times
-   tempLick = find( bData.thresholdedLicks(window) ==1);
-   tempRun  = find( bData.binaryVelocity(window)  == 1);
+   % Total lickcount
+   bhv.lickCount(n,1) = 0;
+    
+   % Peri stimulus time window
+   for ep = 1:4
+      window = stimSamps(n) + epochs{ep};
 
+      % Sometimes we don't have enough samples on last trial, annoyingly.
+      missing = window(end) - length(bData.thresholdedLicks);
+      if missing > 0
+         warning on
+         warning(['bData is not long enough, cutting ', num2str(missing), ' ms.'])
+         window = window(1):length(bData.thresholdedLicks);
+      end
+         
+      % Find any lick times and msk.run times
+      tempLick = find( bData.thresholdedLicks(window) ==1);
+      tempRun  = find( bData.binaryVelocity(window)  == 1);
+
+      % Save lick count for the epoch
+      bhv.lickCnt{ep}(n,1)  = numel(tempLick);
+      
+      % Increment total lick count
+      bhv.lickCount(n,1) = bhv.lickCount(n,1) + bhv.lickCnt{ep}(n);
+      
+      % Extract whether or not the mouse ran during the window
+      if numel(tempRun) > 0
+         if ep == 2
+            bhv.msk.run(n) = 1;
+         end
+
+         tempVel = bData.velocity(stimSamps(n) + epochs{ep});
+         bhv.vel{ep}(n,1) = nanmean(abs(tempVel));
+      else
+         % Didn't run, velocity was zero
+         if ep == 2
+            bhv.msk.run(n) = 0;
+         end
+         
+         bhv.vel{ep}(n,1) = 0;
+      end
+   end
+      
    % Check to see if the animal licked in the window
-   if numel(tempLick)>0
+   % Second epoch is response period, hence index
+   if bhv.lickCnt{2}(n) > 0
       
       % It licked
       bhv.msk.lick(n)    = 1;
-      bhv.lickLatency(n) = tempLick(1);
-      bhv.lickCount(n)   = numel(tempLick);
+      bhv.lickLatency(n) = bhv.lickCnt{2}(1);
+
       
       % Hits, misses, etc
       if bhv.amp(n) > 0
@@ -41,12 +78,11 @@ for n = 1:n_trials
          bhv.msk.miss(n) = NaN;
       end
       
-   elseif numel(tempLick) == 0
+   elseif bhv.lickCnt{2}(n) == 0
       
       % It didn't msk.lick
       bhv.msk.lick(n) = 0;
       bhv.lickLatency(n) = NaN;
-      bhv.lickCount(n) = 0;
       
       % 
       if bhv.amp(n)>0
@@ -61,20 +97,7 @@ for n = 1:n_trials
          bhv.msk.miss(n) = NaN;
       end
    end
-
-   % Extract whether or not the mouse ran during the report window
-   if numel(tempRun) > 0
-      bhv.msk.run(n) = 1;
-      
-      tempVel    = bData.velocity(stimSamps(n):stimSamps(n)+ lickWindow);
-      bhv.vel(n) = nanmean(abs(tempVel));
-   else
-      
-      % Didn't run, velocity was zero
-      bhv.msk.run(n) = 0;
-      bhv.vel(n) = 0;
-   end
-
+   
    bhv.depth(n) = depth;
 end
 

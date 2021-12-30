@@ -16,11 +16,26 @@ stimInds = [stimOnInds, catchOnInds];
 stimInds = sort(stimInds);
 n_trials = min(length(stimInds), ps.nStimMax);
 
+% Get lick vector
+preSamps  = 3000;
+postSamps = 3000;
+[~, licksVect] = getStateSamps(bData.thresholdedLicks, 1, 1);
+
+% Get aggregated lick raster
+lickRstr = nan(n_trials, preSamps + postSamps + 1);
+for n = 1:numel(stimInds)-1
+   rstrSamps = stimInds(n) + (-preSamps:postSamps);
+   lickRstr(n,:) = licksVect(rstrSamps)==1;
+end
+
 % Check bData
 check_bData_dims(bData, n_trials)
 
 % Parse behavior and get last good trial number
-parsed = parse_behavior(bData, stimInds, ps.lickWindow, depth, n_trials, ps);
+parsed = parse_behavior(bData, stimInds, ps.epochs, depth, n_trials, ps);
+
+% Attach lick raster to parsed
+parsed.lickRstr = lickRstr;
 
 % Stimulus indices in fluor data.
 stimInds = stimInds(1:n_trials);
