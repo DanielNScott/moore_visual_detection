@@ -173,6 +173,27 @@ for mnum = 1:length(mus)
          end
       end
       
+      
+
+      if any(strcmp(sel, 'slopes'))
+         flr = mus{mnum}.PVs{dnum}; 
+
+         plot_flr_epoch_slopes_sig; 
+
+         % Get easy to write date string and mouse ID
+         dstr = mus{mnum}.nfo{dnum}.dstr;
+         mid  = mus{mnum}.mta.id;
+
+         % General title string baseline
+         tstr = ['Mouse ', num2str(mid), ', ', dstr];
+
+         suptitle(['\bf{', tstr, '}'])
+
+         export_fig([mus_path, tstr , ', Significant Slopes',desc])
+         close all
+      end
+      
+      
    end % day loop
 end % mouse loop
 

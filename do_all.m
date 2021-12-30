@@ -11,23 +11,27 @@ cen = censor_data(mus);
 % Add a bunch of processed fluorescence
 cen = add_flr(cen);
 
+% Get signal and detection probabilities
+cen = get_SPDP(cen, [1000,1001; 1001,2000]);
+
+cen = get_lick_rates(cen, 3000, 3000);
 
 % Now we can plot everything for the valid data
-plot_all(cen, ', Valid')
+%plot_all(cen, ', Valid')
 
 
 % Maybe we want to deal only with valid, hit trials:
-tmp = censor_data(cen, 'hit');
-plot_all(tmp, 'Valid Hits')
+%tmp = censor_data(cen, 'hit');
+%plot_all(tmp, 'Valid Hits')
 
 % Or miss trials
-tmp = censor_data(cen, 'miss');
-plot_all(tmp, 'Valid Miss')
+%tmp = censor_data(cen, 'miss');
+%plot_all(tmp, 'Valid Miss')
 
 %
-tmp = censor_data(cen, 'fa');
-plot_all(tmp, 'Valid Miss')
+%tmp = censor_data(cen, 'fa');
+%plot_all(tmp, 'Valid Miss')
 
 
-tmp = censor_data(cen, 'cr');
-plot_all(tmp, 'Valid CR')
+%tmp = censor_data(cen, 'cr');
+%plot_all(tmp, 'Valid CR')
