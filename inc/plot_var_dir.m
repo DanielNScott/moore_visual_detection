@@ -1,6 +1,8 @@
 
 mnum = 1;
-dnum = 6;
+dnum = 4;
+epch = 2;
+
 
 bhv = cen{mnum}.bhv{dnum};
 flr = cen{mnum}.PVs{dnum};
@@ -10,9 +12,11 @@ msk   = bhv.msk.hit;
 msk(isnan(msk)) = 0; 
 msk = logical(msk);
 
-strls = bhv.nds.stim;
+nds = mus{1}.bhv{4}.nds.amp9;
 
-mdl  = fitglm(squeeze(flr.cF(strls,3,:)), msk(strls),'Distribution','binomial');
+%strls = bhv.nds.stim;
+
+mdl  = fitglm(squeeze(flr.cF(nds,epch,:)), msk(nds),'Distribution','binomial');
 
 sigs = mdl.Coefficients.pValue(2:end) < 0.05;
 wgts = mdl.Coefficients.Estimate(2:end);
@@ -26,7 +30,7 @@ msk = cen{mnum}.bhv{dnum}.msk.amp9;
 msk(isnan(msk)) = 0;
 msk = logical(msk);
 
-rp = squeeze(flr.cF(msk,3,:));
+rp = squeeze(flr.cF(msk,epch,:));
 rho = cov(rp);
 
 [v,d] = eig(rho);

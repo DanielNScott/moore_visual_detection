@@ -28,8 +28,15 @@ for k = 1:numel(msk_strs)
 
    tmp = mean(permute(flr.mF(bhv.nds.(msk_strs{k}),:,:), [3,2,1]),3);
 
+   hinds = flr.cellnfo.hit;
+   minds = flr.cellnfo.miss;
+   ninds = flr.cellnfo.non;
+   
    subplot(4,3,l)
-   plot(tmp(:,2), tmp(:,3),'o')
+   plot(tmp(hinds,2), tmp(hinds,3),'o', 'LineWidth', 2); hold on
+   plot(tmp(minds,2), tmp(minds,3),'o', 'LineWidth', 2);
+   plot(tmp(ninds,2), tmp(ninds,3),'o', 'LineWidth', 2, 'Color', [0.5 0.5 0.5]);
+   
    fmt()
    xlabel('Resp.')
    ylabel('Wait')
@@ -38,7 +45,9 @@ for k = 1:numel(msk_strs)
    
 
    subplot(4,3,l)
-   plot(tmp(:,3), tmp(:,4),'o')
+   plot(tmp(hinds,3), tmp(hinds,4),'o', 'LineWidth', 2); hold on
+   plot(tmp(minds,3), tmp(minds,4),'o', 'LineWidth', 2);
+   plot(tmp(ninds,3), tmp(ninds,4),'o', 'LineWidth', 2, 'Color', [0.5 0.5 0.5]);
    fmt()
    xlabel('Wait')
    ylabel('Rew.')
@@ -46,7 +55,9 @@ for k = 1:numel(msk_strs)
    l = l + 1;
 
    subplot(4,3,l)
-   plot(tmp(:,2), tmp(:,4),'o')
+   plot(tmp(hinds,2), tmp(hinds,4),'o', 'LineWidth', 2); hold on
+   plot(tmp(minds,2), tmp(minds,4),'o', 'LineWidth', 2);
+   plot(tmp(ninds,2), tmp(ninds,4),'o', 'LineWidth', 2, 'Color', [0.5 0.5 0.5]);
    fmt()
    xlabel('Resp.')
    ylabel('Rew.')

@@ -1,6 +1,6 @@
 function [] = check_bData_dims(bData, nStim)
 
-% bData.contrast has one extra the gets cut (at end, an artefact)
+% bData.contrast has one extra the gets cut (at end, an artifact)
 nStim1 = nStim;
 nStim2 = length(bData.contrast)-1;
 nStim3 = bData.completedTrials;
